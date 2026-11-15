@@ -4,6 +4,7 @@ import React, { createContext, useContext, useEffect, useState, useCallback } fr
 import { useRouter } from 'next/navigation';
 import { useProgressionStore, UserProfile } from '@/stores/useProgressionStore';
 import { playSound } from '@/utils/sound';
+import { getDemoPersona } from '@/data/demoPersonas';
 
 type AuthUser = UserProfile & {
   id: number;
@@ -15,6 +16,7 @@ type AuthUser = UserProfile & {
   achievements: Array<{ id: string; title: string; desc: string; unlocked: boolean; icon: string; tier: string; unlockedAt?: string }>;
   careerProgress: Record<string, number>;
   dreamJobId: string | null;
+  isDemoPersona?: boolean;
 };
 
 interface AuthContextType {
@@ -22,6 +24,7 @@ interface AuthContextType {
   isLoading: boolean;
   isAuthenticated: boolean;
   signIn: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  signInAsPersona: (personaId: string) => boolean;
   signOut: () => Promise<void>;
   refreshUser: () => Promise<void>;
 }
@@ -47,11 +50,40 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const updateProfile = useProgressionStore((state) => state.updateProfile);
   const setColorMode = useProgressionStore((state) => state.setColorMode);
   const setEducationTier = useProgressionStore((state) => state.setEducationTier);
+  const applyDemoPersona = useProgressionStore((state) => state.applyDemoPersona);
 
-  // Check for existing user session on mount
+  // Restore a selected frontend demo persona before checking for a server session.
   useEffect(() => {
     const checkAuth = async () => {
       try {
+        const selectedPersona = localStorage.getItem('dreampath-demo-persona');
+        if (selectedPersona) {
+          const persona = getDemoPersona(selectedPersona);
+          if (persona) {
+            applyDemoPersona(persona);
+            const current = useProgressionStore.getState();
+            const { colorMode, ...profile } = current.profile;
+            const demoUser: AuthUser = {
+              ...profile,
+              id: -1,
+              email: '',
+              totalXp: current.totalXp,
+              simulatedSalary: current.simulatedSalary,
+              completedQuests: current.completedQuests,
+              skills: current.skills,
+              achievements: current.achievements,
+              careerProgress: current.careerProgress,
+              dreamJobId: persona.primaryCareerId,
+              isDemoPersona: true,
+              colorMode,
+            };
+            setUser(demoUser);
+            document.cookie = 'dreampath-demo-persona=1; Path=/; SameSite=Lax';
+            return;
+          }
+          localStorage.removeItem('dreampath-demo-persona');
+        }
+
         const response = await fetch('/api/auth/session', { cache: 'no-store' });
         if (!response.ok) {
           localStorage.removeItem('dreampath-current-user');
@@ -98,9 +130,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     checkAuth();
-  }, [updateProfile, setColorMode, setEducationTier]);
+  }, [updateProfile, setColorMode, setEducationTier, applyDemoPersona]);
 
   const refreshUser = useCallback(async () => {
+    if (user?.isDemoPersona) return;
     const response = await fetch('/api/auth/session', { cache: 'no-store' });
     if (!response.ok) throw new Error('Could not refresh your account details.');
     const { user: freshUser } = await response.json();
@@ -108,10 +141,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(freshUser);
     applyUserToStore(freshUser, updateProfile, setColorMode, setEducationTier);
     localStorage.setItem('dreampath-current-user', JSON.stringify(freshUser));
-  }, [updateProfile, setColorMode, setEducationTier]);
+  }, [updateProfile, setColorMode, setEducationTier, user]);
+
+  const signInAsPersona = useCallback((personaId: string) => {
+    const persona = getDemoPersona(personaId);
+    if (!persona) return false;
+
+    applyDemoPersona(persona);
+    const { colorMode, ...profile } = useProgressionStore.getState().profile;
+    const demoUser: AuthUser = {
+      ...profile,
+      id: -1,
+      email: '',
+      totalXp: persona.initialProgress.totalXp,
+      simulatedSalary: persona.initialProgress.simulatedSalary,
+      completedQuests: [...persona.initialProgress.completedQuests],
+      skills: { ...persona.initialProgress.skills },
+      achievements: [...persona.initialProgress.achievements],
+      careerProgress: { ...persona.initialProgress.careerProgress },
+      dreamJobId: persona.primaryCareerId,
+      isDemoPersona: true,
+      colorMode,
+    };
+    localStorage.setItem('dreampath-demo-persona', persona.id);
+    document.cookie = 'dreampath-demo-persona=1; Path=/; SameSite=Lax';
+    localStorage.removeItem('dreampath-current-user');
+    setUser(demoUser);
+    playSound('success');
+    return true;
+  }, [applyDemoPersona]);
 
   const signIn = useCallback(async (email: string, password: string) => {
-    try {
+   try {
       const response = await fetch('/api/auth/signin', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -127,6 +188,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       playSound('success');
 
       const userData = data.user;
+      localStorage.removeItem('dreampath-demo-persona');
+      document.cookie = 'dreampath-demo-persona=; Path=/; Max-Age=0; SameSite=Lax';
       setUser(userData);
       applyUserToStore(userData, updateProfile, setColorMode, setEducationTier);
       localStorage.setItem('dreampath-current-user', JSON.stringify(userData));
@@ -139,6 +202,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [updateProfile, setColorMode, setEducationTier]);
 
   const signOut = useCallback(async () => {
+    if (user?.isDemoPersona) {
+      playSound('click');
+      setUser(null);
+      localStorage.removeItem('dreampath-demo-persona');
+      document.cookie = 'dreampath-demo-persona=; Path=/; Max-Age=0; SameSite=Lax';
+      router.replace('/');
+      router.refresh();
+      return;
+    }
+
     try {
       const response = await fetch('/api/auth/signout', { method: 'POST' });
       if (!response.ok) throw new Error('Could not clear the server session');
@@ -148,13 +221,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       playSound('click');
       setUser(null);
       localStorage.removeItem('dreampath-current-user');
+      localStorage.removeItem('dreampath-demo-persona');
+      document.cookie = 'dreampath-demo-persona=; Path=/; Max-Age=0; SameSite=Lax';
       router.replace('/');
       router.refresh();
     }
-  }, [router]);
+  }, [router, user]);
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, isAuthenticated: !!user, signIn, signOut, refreshUser }}>
+    <AuthContext.Provider value={{ user, isLoading, isAuthenticated: !!user, signIn, signInAsPersona, signOut, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

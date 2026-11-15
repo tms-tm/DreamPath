@@ -37,14 +37,20 @@ export function proxy(request: NextRequest) {
 
   const sessionCookie = request.cookies.get('dreampath-auth')?.value;
   const hasValidSessionId = Boolean(sessionCookie && /^[1-9]\d*$/.test(sessionCookie));
+  const hasDemoPersona = request.cookies.get('dreampath-demo-persona')?.value === '1';
+  const hasClientSession = hasValidSessionId || hasDemoPersona;
 
-  if ((isProtectedRoute || isOnboardingRoute) && !hasValidSessionId) {
+  if ((isProtectedRoute || isOnboardingRoute) && !hasClientSession) {
     const signInUrl = new URL('/auth/signin', request.url);
     return NextResponse.redirect(signInUrl);
   }
 
   if (pathname === '/auth/signin' && hasValidSessionId) {
     return NextResponse.redirect(new URL('/onboarding/education', request.url));
+  }
+
+  if (pathname === '/auth/signin' && hasDemoPersona) {
+    return NextResponse.redirect(new URL('/home', request.url));
   }
 
   return NextResponse.next();

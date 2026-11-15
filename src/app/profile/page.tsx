@@ -8,7 +8,6 @@ import {
   Check
 } from 'lucide-react';
 import { useProgressionStore } from '@/stores/useProgressionStore';
-import { CAREER_PATHS } from '@/types/career';
 
 export default function ProfilePage() {
   const { profile, totalXp, skills, updateProfile } = useProgressionStore();
@@ -43,7 +42,11 @@ export default function ProfilePage() {
     return () => observer.disconnect();
   }, []);
 
-  const activeCareer = CAREER_PATHS.find((c) => c.id === profile.activeCareerId) || CAREER_PATHS[0];
+  const careerLabel = profile.exploringCareers
+    ? 'Exploring Careers'
+    : profile.careerInterests?.length
+      ? profile.careerInterests.join(' · ')
+      : 'No career selected';
 
   const handleSaveName = () => {
     updateProfile({ name: nameInput });
@@ -161,14 +164,13 @@ export default function ProfilePage() {
               <div className="space-y-1.5">
                 <label className={`text-xs font-bold ${subText}`}>Learning stage</label>
                 <div
-                  className={`w-full px-4 py-2.5 text-sm font-medium rounded-2xl border flex items-center justify-between ${
+                  className={`w-full px-4 py-2.5 text-sm font-medium rounded-2xl border ${
                     isDarkMode
                       ? 'bg-[#101221] border-[#222749] text-slate-300'
                       : 'bg-slate-50 border-slate-200 text-slate-700'
                   }`}
                 >
-                  <span>Primary</span>
-                  <span className="text-xs text-slate-400">🔒</span>
+                  {profile.educationDisplay || 'Learning stage not set'}
                 </div>
               </div>
             </div>
@@ -182,10 +184,14 @@ export default function ProfilePage() {
                     : 'bg-slate-50 border-slate-200 text-slate-800'
                 }`}
               >
-                {activeCareer.title ? `Build things that help people (${activeCareer.title})` : 'Build things that help people'}
+                {careerLabel}
               </div>
               <p className={`text-[11px] pt-0.5 ${subText}`}>
-                Your profile is customized for your active career path.
+                {profile.careerInterests?.length && profile.careerInterests.length > 1
+                  ? 'Explore each interest at your own pace.'
+                  : profile.exploringCareers
+                    ? 'Your career journey is open to every possibility.'
+                    : 'Your profile reflects your current career interest.'}
               </p>
             </div>
 

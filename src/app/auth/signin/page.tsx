@@ -12,18 +12,42 @@ import {
   ArrowRight,
   AlertCircle,
   Loader2,
+  GraduationCap,
+  BriefcaseBusiness,
 } from 'lucide-react';
 import { playSound } from '@/utils/sound';
 import { useAuth } from '@/contexts/AuthContext';
+import { DEMO_PERSONAS } from '@/data/demoPersonas';
 
 function SignInPageContent() {
   const router = useRouter();
-  const { signIn } = useAuth();
+  const { signIn, signInAsPersona } = useAuth();
+  const [isPersonaLoading, setIsPersonaLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
+  const handlePersonaSelect = (personaId: string) => {
+    if (isLoading || isPersonaLoading) return;
+    setIsPersonaLoading(true);
+    playSound('click');
+    setError('');
+    try {
+      const selected = signInAsPersona(personaId);
+      if (!selected) {
+        setError('That demo profile is unavailable. Please refresh and try again.');
+        setIsPersonaLoading(false);
+        return;
+      }
+      router.replace('/home');
+    } catch (err) {
+      console.error('Demo persona selection error:', err);
+      setError('Could not open this demo profile. Please try again.');
+      setIsPersonaLoading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,6 +90,34 @@ function SignInPageContent() {
         </div>
 
         <div className="rounded-[24px] border border-slate-200 bg-white p-6 shadow-sm transition-colors duration-200 dark:border-[#2E3254] dark:bg-[#16172B] sm:p-8">
+          <section aria-labelledby="persona-heading" className="mb-7">
+            <div className="mb-4">
+              <h2 id="persona-heading" className="text-lg font-bold text-slate-900 dark:text-white">Sign in as Persona</h2>
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Try the app with a ready-made demo profile. No account is created.</p>
+            </div>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              {DEMO_PERSONAS.map((persona) => (
+                <button
+                  key={persona.id}
+                  type="button"
+                  onClick={() => handlePersonaSelect(persona.id)}
+                  disabled={isLoading || isPersonaLoading}
+                  className="group rounded-2xl border border-slate-200 bg-slate-50 p-4 text-left transition hover:-translate-y-0.5 hover:border-indigo-400 hover:bg-indigo-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 disabled:cursor-not-allowed disabled:opacity-50 dark:border-[#2E3254] dark:bg-[#101221] dark:hover:border-indigo-400 dark:hover:bg-indigo-500/10"
+                  aria-label={`Continue as ${persona.name}`}
+                >
+                  <span className="flex items-center gap-2 text-sm font-bold text-slate-900 group-hover:text-indigo-600 dark:text-white dark:group-hover:text-indigo-300">
+                    <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-300">{persona.name.charAt(0)}</span>
+                    {persona.name}
+                  </span>
+                  <span className="mt-3 flex items-start gap-2 text-xs leading-relaxed text-slate-600 dark:text-slate-300"><GraduationCap className="mt-0.5 h-4 w-4 shrink-0 text-indigo-500" />{persona.education}</span>
+                  <span className="mt-2 flex items-start gap-2 text-xs leading-relaxed text-slate-600 dark:text-slate-300"><BriefcaseBusiness className="mt-0.5 h-4 w-4 shrink-0 text-purple-500" /><span>{persona.exploringCareers ? 'Exploring Careers' : persona.careerInterests.join(' · ')}</span></span>
+                </button>
+              ))}
+            </div>
+          </section>
+
+          <div className="mb-6 flex items-center gap-3 text-xs font-semibold uppercase tracking-wider text-slate-400"><span className="h-px flex-1 bg-slate-200 dark:bg-[#2E3254]" />Or use your account<span className="h-px flex-1 bg-slate-200 dark:bg-[#2E3254]" /></div>
+
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label htmlFor="email" className="mb-2 block text-sm font-medium text-slate-900 dark:text-white">
@@ -133,7 +185,7 @@ function SignInPageContent() {
 
           <div className="mt-6 border-t border-slate-200/50 pt-6 dark:border-[#2E3254]/50">
             <p className="text-center text-xs text-slate-500 dark:text-slate-400">
-              Demo access credentials are provided separately. Enter them above to sign in.
+              Demo personas are local preview profiles. Email and password sign-in uses your account.
             </p>
           </div>
         </div>

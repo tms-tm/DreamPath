@@ -67,7 +67,8 @@ export default function DashboardHomePage() {
   const tier = EDUCATION_TIERS[profile.educationTier] || EDUCATION_TIERS.aurora;
 
   const activeCareer =
-    CAREER_PATHS.find((c) => c.id === profile.activeCareerId) || CAREER_PATHS[0];
+    CAREER_PATHS.find((c) => c.id === profile.activeCareerId) ||
+    CAREER_PATHS.find((c) => c.id === 'software-engineer')!;
 
   const handleStartDailyQuest = () => {
     playSound('click');

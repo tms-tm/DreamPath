@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { TierId, SkillId, CAREER_PATHS } from '@/types/career';
+import type { DemoPersona } from '@/data/demoPersonas';
 
 export interface SkillProgress {
   xp: number;
@@ -15,6 +16,10 @@ export interface UserProfile {
   joinedDate: string;
   currentLevel: number;
   educationTier: TierId;
+  educationDisplay?: string;
+  careerInterests?: string[];
+  primaryCareerId?: string | null;
+  exploringCareers?: boolean;
   activeCareerId: string;
   screenTimeUsedMinutes: number;
   screenTimeMaxMinutes: number;
@@ -47,7 +52,9 @@ interface ProgressionState {
   achievements: AchievementItem[];
   careerProgress: Record<string, number>; // careerId -> progressPercent
   completedQuests: string[];
-  
+  demoPersonaId: string | null;
+  applyDemoPersona: (persona: DemoPersona) => void;
+
   // Actions
   setColorMode: (mode: 'dark' | 'light') => void;
   toggleColorMode: () => void;
@@ -161,6 +168,35 @@ export const useProgressionStore = create<ProgressionState>()(
         'master-chef': 10,
       },
       completedQuests: ['quest-btn-1'],
+      demoPersonaId: null,
+      applyDemoPersona: (persona) =>
+        set({
+          demoPersonaId: persona.id,
+          profile: {
+            name: persona.name,
+            handle: `@${persona.id}`,
+            avatarChar: persona.name.charAt(0),
+            ...persona.profile,
+            educationTier: persona.educationTier,
+            educationDisplay: persona.education,
+            careerInterests: [...persona.careerInterests],
+            primaryCareerId: persona.primaryCareerId,
+            exploringCareers: persona.exploringCareers ?? false,
+            activeCareerId: persona.primaryCareerId ?? '',
+          },
+          totalXp: persona.initialProgress.totalXp,
+          simulatedSalary: persona.initialProgress.simulatedSalary,
+          skills: {
+            'html-css': { ...persona.initialProgress.skills['html-css'] },
+            javascript: { ...persona.initialProgress.skills.javascript },
+            'problem-solving': { ...persona.initialProgress.skills['problem-solving'] },
+            communication: { ...persona.initialProgress.skills.communication },
+            accessibility: { ...persona.initialProgress.skills.accessibility },
+          },
+          achievements: [...persona.initialProgress.achievements],
+          careerProgress: { ...persona.initialProgress.careerProgress },
+          completedQuests: [...persona.initialProgress.completedQuests],
+        }),
 
       setColorMode: (mode) =>
         set((state) => ({ profile: { ...state.profile, colorMode: mode } })),
@@ -214,7 +250,7 @@ export const useProgressionStore = create<ProgressionState>()(
 
           // Recalculate salary
           const activeCareer = CAREER_PATHS.find((c) => c.id === state.profile.activeCareerId);
-          const base = activeCareer?.baseSalary ?? 5000;
+          const base = activeCareer?.baseSalary ?? 0;
           const competencySum = Object.values(nextSkills).reduce(
             (acc, curr) => acc + (curr.competency / 100) * 150,
             0
@@ -272,7 +308,7 @@ export const useProgressionStore = create<ProgressionState>()(
       calculateSalary: () => {
         const state = get();
         const activeCareer = CAREER_PATHS.find((c) => c.id === state.profile.activeCareerId);
-        const base = activeCareer?.baseSalary ?? 5000;
+        const base = activeCareer?.baseSalary ?? 0;
         return Math.round(base * 0.25 + state.totalXp * 0.8);
       },
     }),
