@@ -265,9 +265,9 @@ export function DreamyMascot({
           rig.add(model);
           scene.add(rig);
 
-          model.traverse((o: any) => {
-            if (o.isMesh) {
-              o.material = materialFor(o.parent && o.parent.isMesh ? o.parent.name : o.name);
+          model.traverse((o: THREE.Object3D) => {
+            if (o instanceof THREE.Mesh) {
+              o.material = materialFor(o.parent instanceof THREE.Mesh ? o.parent.name : o.name);
             }
           });
 
@@ -570,7 +570,7 @@ export function DreamyMascot({
       };
     } catch (e) {
       console.warn('WebGL init failed, using fallback:', e);
-      setHasWebGlError(true);
+      requestAnimationFrame(() => setHasWebGlError(true));
     }
   }, [size]);
 

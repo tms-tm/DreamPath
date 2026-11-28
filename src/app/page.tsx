@@ -263,7 +263,7 @@ export default function HomePage() {
               <div className="p-4 rounded-xl bg-[#FAF8F5] border border-[#EAE5DE] space-y-3">
                 <div className="text-xs font-bold text-[#0E86D4] uppercase">Interactive Front-End Sandbox</div>
                 <div className="p-3 bg-[#1E232A] text-emerald-400 font-mono text-xs rounded-lg">
-                  &lt;button type="submit" aria-label="Join Study Club"&gt;Join Study Club&lt;/button&gt;
+                  &lt;button type=&quot;submit&quot; aria-label=&quot;Join Study Club&quot;&gt;Join Study Club&lt;/button&gt;
                 </div>
                 <button
                   onClick={handleFinishQuest}
@@ -399,7 +399,7 @@ export default function HomePage() {
               <h3 className="text-base font-bold text-[#1E232A]">Your Skill Progress</h3>
             </div>
             <p className="text-xs text-charcoal-muted mb-6">
-              Track the skills you're developing for your dream career.
+              Track the skills you&apos;re developing for your dream career.
             </p>
 
             {/* Skill Items */}

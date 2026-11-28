@@ -95,7 +95,7 @@ export function AskDreamyOverlay() {
   // Periodic ambient teaser bubbles when idle and chat is closed
   useEffect(() => {
     if (isOpen) {
-      hush();
+      if (bubbleTimerRef.current) clearTimeout(bubbleTimerRef.current);
       return;
     }
 
@@ -170,13 +170,16 @@ export function AskDreamyOverlay() {
     }
 
     place(initialX, initialY);
-    setIsReady(true);
+    const readyFrame = requestAnimationFrame(() => setIsReady(true));
 
     const handleResize = () => {
       place(posRef.current.x, posRef.current.y);
     };
     window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    return () => {
+      cancelAnimationFrame(readyFrame);
+      window.removeEventListener('resize', handleResize);
+    };
   }, [place]);
 
   // Spring tilt inertia loop inside requestAnimationFrame
@@ -446,7 +449,6 @@ export function AskDreamyOverlay() {
           onPointerCancel={handlePointerUp}
           className="fixed top-0 left-0 z-50 pointer-events-auto cursor-grab active:cursor-grabbing select-none touch-none will-change-transform flex flex-col items-center"
           style={{
-            transform: `translate3d(${posRef.current.x.toFixed(1)}px, ${posRef.current.y.toFixed(1)}px, 0)`,
             visibility: isReady ? 'visible' : 'hidden',
           }}
           title="Drag Dreamy or click to chat!"
