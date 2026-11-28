@@ -36,6 +36,7 @@ module.exports = {
           DEFAULT: '#74777d',
           variant: '#c4c6cd',
         },
+        hairline: '#e8e5dc',
         primary: {
           DEFAULT: '#4e6074',
           container: '#cfe2fa',
@@ -80,6 +81,12 @@ module.exports = {
           DEFAULT: '#ffffff',
           container: '#93000a',
         },
+        sunshine: {
+          container: '#fdf1d2',
+        },
+        'on-sunshine': {
+          container: '#7a5c1b',
+        },
       },
       fontFamily: {
         sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
@@ -95,7 +102,7 @@ module.exports = {
       boxShadow: {
         soft: '0 2px 14px -3px rgba(42, 36, 27, 0.04), 0 1px 4px -1px rgba(42, 36, 27, 0.02)',
         card: '0 8px 20px -4px rgba(40, 30, 20, 0.05), 0 2px 6px -2px rgba(40, 30, 20, 0.03)',
-        float: '0 12px 28px -6px rgba(78, 96, 116, 0.25), 0 4px 10px -2px rgba(78, 96, 116, 0.15)',
+        float: '0 16px 36px -6px rgba(30, 25, 20, 0.12), 0 6px 12px -3px rgba(30, 25, 20, 0.06)',
         podium: '0 12px 30px -8px rgba(78, 96, 116, 0.18)',
       },
     },
