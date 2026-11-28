@@ -19,20 +19,44 @@ import {
   Zap,
 } from 'lucide-react';
 import { Badge, Button, Card, ProgressBar } from '@/components/ui';
+import { CAREERS, getCareerById } from '@/content/careers';
+import { DAILY_QUEST_XP, XP_PER_LEVEL } from '@/features/progression/math';
 import { useProgressionStore } from '@/stores/useProgressionStore';
 
 export function DashboardView() {
-  const { completedQuests, completeQuest } = useProgressionStore();
+  const {
+    profile,
+    totalXp,
+    simulatedSalary,
+    completedQuests,
+    completedActivityIds,
+    completeQuest,
+    skills,
+  } = useProgressionStore();
 
   const [questStarted, setQuestStarted] = useState(false);
-  const isQuestDone = completedQuests.includes('quest-btn-1');
+  const isQuestDone =
+    completedQuests.includes('quest-btn-1') || completedActivityIds.includes('quest-btn-1');
+
+  const activeCareer = getCareerById(profile.activeCareerId) ?? CAREERS[0];
+  const xpIntoCurrentLevel = totalXp % XP_PER_LEVEL;
+  const xpToNextLevel = XP_PER_LEVEL - xpIntoCurrentLevel;
+  const levelProgressPct = Math.round((xpIntoCurrentLevel / XP_PER_LEVEL) * 100);
+
+  const skillEntries = [
+    { key: 'problem-solving' as const, label: 'Problem Solving', tone: 'primary' as const },
+    { key: 'javascript' as const, label: 'JavaScript', tone: 'secondary' as const },
+    { key: 'html-css' as const, label: 'HTML & CSS', tone: 'primary' as const },
+    { key: 'communication' as const, label: 'Communication', tone: 'tertiary' as const },
+    { key: 'accessibility' as const, label: 'Accessibility', tone: 'secondary' as const },
+  ];
 
   const handleStartDailyQuest = () => {
     setQuestStarted(true);
   };
 
   const handleFinishQuest = () => {
-    completeQuest('quest-btn-1', 80);
+    completeQuest('quest-btn-1', DAILY_QUEST_XP);
     setQuestStarted(false);
   };
 
@@ -46,15 +70,19 @@ export function DashboardView() {
               <div className="w-9 h-9 rounded-xl bg-sunshine-container text-on-sunshine-container flex items-center justify-center">
                 <Award className="w-5 h-5" aria-hidden="true" />
               </div>
-              <span className="text-xl font-bold text-on-surface">1,280 XP</span>
+              <span className="text-xl font-bold text-on-surface">
+                {totalXp.toLocaleString()} XP
+              </span>
             </div>
-            <Badge variant="sky">Lv. 4</Badge>
+            <Badge variant="sky">Lv. {profile.currentLevel}</Badge>
           </div>
           <div className="space-y-1.5">
             <div className="flex items-center justify-end text-[11px] font-medium text-on-surface-variant">
-              <span>to Lv. 5</span>
+              <span>
+                {xpToNextLevel} XP to Lv. {profile.currentLevel + 1}
+              </span>
             </div>
-            <ProgressBar value={65} label="XP progress to Level 5" />
+            <ProgressBar value={levelProgressPct} label="XP progress to next level" />
           </div>
         </Card>
 
@@ -65,12 +93,15 @@ export function DashboardView() {
             </div>
             <div>
               <div className="text-xl font-bold text-on-surface">
-                RM 2,160 <span className="text-xs font-normal text-on-surface-variant">/mo</span>
+                RM {simulatedSalary.toLocaleString()}{' '}
+                <span className="text-xs font-normal text-on-surface-variant">/mo</span>
               </div>
-              <p className="text-xs font-medium text-on-surface-variant mt-0.5">Estimated Entry</p>
+              <p className="text-xs font-medium text-on-surface-variant mt-0.5">
+                Estimated (MY)
+              </p>
             </div>
           </div>
-          <Badge variant="sage">+RM 120</Badge>
+          <Badge variant="sage">{activeCareer.i18n.en.title}</Badge>
         </Card>
 
         <Card className="p-5 hover:shadow-card transition-shadow flex items-center justify-between">
@@ -79,13 +110,17 @@ export function DashboardView() {
               <Flame className="w-5 h-5" aria-hidden="true" />
             </div>
             <div>
-              <span className="text-xl font-bold text-on-surface">7-Day Streak</span>
-              <p className="text-xs font-medium text-on-surface-variant mt-0.5">Keep learning daily</p>
+              <span className="text-xl font-bold text-on-surface">
+                {profile.streakDays}-Day Streak
+              </span>
+              <p className="text-xs font-medium text-on-surface-variant mt-0.5">
+                {profile.missionsCompleted} activities completed
+              </p>
             </div>
           </div>
           <Badge variant="sunshine">
             <Zap className="w-3 h-3" aria-hidden="true" />
-            Active
+            Nebula
           </Badge>
         </Card>
       </section>
@@ -98,14 +133,14 @@ export function DashboardView() {
         <div className="relative z-10 max-w-xl">
           <Badge variant="sunshine" className="mb-4 uppercase tracking-wide">
             <Sparkles className="w-3.5 h-3.5" aria-hidden="true" />
-            Nebula Career Explorer
+            Nebula Tier · Ages 13–15
           </Badge>
 
           <h2 className="text-2xl md:text-3xl font-extrabold text-on-surface tracking-tight">
-            Explore Your Future Job
+            {activeCareer.i18n.en.title}
           </h2>
           <p className="mt-2 text-sm md:text-base text-on-surface-variant leading-relaxed">
-            View detailed career insights, required candidate skills, and your real-time job market match.
+            {activeCareer.i18n.en.subtitle}
           </p>
 
           <div className="mt-6 flex flex-wrap items-center gap-4">
@@ -137,22 +172,22 @@ export function DashboardView() {
                   <Zap className="w-3.5 h-3.5" aria-hidden="true" />
                   DAILY QUEST
                 </Badge>
-                <Badge variant="sky">#42</Badge>
+                <Badge variant="sky">+{DAILY_QUEST_XP} XP</Badge>
               </div>
-              <Badge variant="sage">Easy</Badge>
+              <Badge variant="sage">{isQuestDone ? 'Completed' : 'Ready'}</Badge>
             </div>
 
             <div>
               <h3 className="text-lg font-bold text-on-surface">Fix the Missing Button</h3>
               <p className="mt-1 text-xs md:text-sm text-on-surface-variant leading-relaxed">
-                Inspect a responsive UI layout bug in the frontend simulation engine and restore the primary CTA button state.
+                Inspect a responsive UI layout bug in the frontend simulation sandbox and restore the primary CTA button state.
               </p>
             </div>
 
             <div className="flex flex-wrap items-center gap-2.5 pt-1">
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-surface-container-low border border-hairline text-xs font-medium text-on-surface-variant">
                 <Clock className="w-3.5 h-3.5 text-on-surface-variant" aria-hidden="true" />
-                +80 XP · ~10 min
+                +{DAILY_QUEST_XP} XP · ~5 min
               </span>
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-surface-container-low border border-hairline text-xs font-medium text-on-surface-variant">
                 <Code2 className="w-3.5 h-3.5 text-primary" aria-hidden="true" />
@@ -164,21 +199,23 @@ export function DashboardView() {
               <div className="flex items-center justify-between text-xs font-semibold text-on-surface mb-1.5">
                 <span>Daily Progress</span>
                 <span className="text-on-surface-variant font-medium">
-                  {isQuestDone ? '1/1 Quests Done' : '1/3 Quests'}
+                  {isQuestDone ? '1/1 Quests Done' : '0/1 Quest'}
                 </span>
               </div>
-              <ProgressBar value={isQuestDone ? 100 : 33.3} label="Daily quest progress" />
+              <ProgressBar value={isQuestDone ? 100 : 0} label="Daily quest progress" />
             </div>
 
             {questStarted && (
               <div className="p-4 rounded-xl bg-surface-container-low border border-hairline space-y-3">
-                <div className="text-xs font-bold text-primary uppercase">Interactive Front-End Sandbox</div>
+                <div className="text-xs font-bold text-primary uppercase">
+                  Interactive Front-End Sandbox
+                </div>
                 <div className="p-3 bg-inverse-surface text-secondary-container font-mono text-xs rounded-lg">
                   &lt;button type=&quot;submit&quot; aria-label=&quot;Join Study Club&quot;&gt;Join Study Club&lt;/button&gt;
                 </div>
                 <Button onClick={handleFinishQuest} className="w-full" size="sm">
                   <Check className="w-4 h-4" aria-hidden="true" />
-                  <span>Deploy &amp; Claim +80 XP</span>
+                  <span>Deploy &amp; Claim +{DAILY_QUEST_XP} XP</span>
                 </Button>
               </div>
             )}
@@ -188,7 +225,7 @@ export function DashboardView() {
             {isQuestDone ? (
               <div className="w-full py-2.5 rounded-xl bg-secondary-container border border-secondary-fixed-dim text-on-secondary-fixed text-sm font-bold flex items-center justify-center gap-2">
                 <Check className="w-4 h-4" aria-hidden="true" />
-                <span>Mission Completed (+80 XP)</span>
+                <span>Mission Completed (+{DAILY_QUEST_XP} XP)</span>
               </div>
             ) : !questStarted ? (
               <Button onClick={handleStartDailyQuest} className="w-full">
@@ -208,15 +245,20 @@ export function DashboardView() {
                 </div>
                 <h3 className="text-base font-bold text-on-surface">Your Career Roadmap</h3>
               </div>
-              <Badge variant="sky">Software Engineer</Badge>
+              <Badge variant="sky">{activeCareer.i18n.en.title}</Badge>
             </div>
 
             <div className="bg-surface-container-low border border-hairline rounded-xl p-3.5">
               <div className="flex items-center justify-between text-xs font-semibold mb-2">
-                <span className="text-on-surface-variant">Overall Completion</span>
-                <span className="text-primary font-bold text-sm">35%</span>
+                <span className="text-on-surface-variant">Completed Activities</span>
+                <span className="text-primary font-bold text-sm">
+                  {completedActivityIds.length} done
+                </span>
               </div>
-              <ProgressBar value={35} label="Career roadmap completion" />
+              <ProgressBar
+                value={Math.min(100, completedActivityIds.length * 10)}
+                label="Career roadmap completion"
+              />
             </div>
 
             <div className="space-y-3.5 pt-1">
@@ -226,10 +268,10 @@ export function DashboardView() {
                 </div>
                 <div>
                   <span className="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider block">
-                    Current Milestone
+                    Key SPM Subjects
                   </span>
                   <p className="text-xs md:text-sm font-semibold text-on-surface">
-                    Building Programming Foundations
+                    {activeCareer.i18n.en.spmSubjects.slice(0, 3).join(', ')}
                   </p>
                 </div>
               </div>
@@ -240,10 +282,10 @@ export function DashboardView() {
                 </div>
                 <div>
                   <span className="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider block">
-                    Next Milestone
+                    Malaysian Universities
                   </span>
                   <p className="text-xs md:text-sm font-semibold text-on-surface">
-                    Master Front-End Development
+                    {activeCareer.i18n.en.uniExamples.join(', ')}
                   </p>
                 </div>
               </div>
@@ -273,37 +315,32 @@ export function DashboardView() {
               <h3 className="text-base font-bold text-on-surface">Your Skill Progress</h3>
             </div>
             <p className="text-xs text-on-surface-variant mb-6">
-              Track the skills you&apos;re developing for your dream career.
+              Track the skills you&apos;re developing across study lessons, quizzes, and scenarios.
             </p>
 
-            <div className="space-y-5">
-              <div>
-                <div className="flex items-center justify-between text-xs font-semibold mb-1.5">
-                  <span className="text-on-surface">JavaScript</span>
-                  <span className="text-primary font-bold">75%</span>
-                </div>
-                <ProgressBar value={75} label="JavaScript progress" />
-              </div>
-
-              <div>
-                <div className="flex items-center justify-between text-xs font-semibold mb-1.5">
-                  <span className="text-on-surface">React</span>
-                  <span className="text-primary font-bold">40%</span>
-                </div>
-                <ProgressBar value={40} label="React progress" tone="secondary" />
-              </div>
-
-              <div>
-                <div className="flex items-center justify-between text-xs font-semibold mb-1.5">
-                  <span className="text-on-surface">System Design</span>
-                  <span className="text-primary font-bold">15%</span>
-                </div>
-                <ProgressBar value={15} label="System Design progress" tone="tertiary" />
-              </div>
+            <div className="space-y-4">
+              {skillEntries.map((item) => {
+                const progress = skills[item.key] ?? { xp: 0, competency: 0 };
+                return (
+                  <div key={item.key}>
+                    <div className="flex items-center justify-between text-xs font-semibold mb-1.5">
+                      <span className="text-on-surface">{item.label}</span>
+                      <span className="text-primary font-bold">
+                        {progress.competency}% ({progress.xp} XP)
+                      </span>
+                    </div>
+                    <ProgressBar
+                      value={progress.competency}
+                      label={`${item.label} competency`}
+                      tone={item.tone}
+                    />
+                  </div>
+                );
+              })}
             </div>
           </div>
 
-          <div className="mt-8 pt-4 text-center border-t border-hairline">
+          <div className="mt-6 pt-4 text-center border-t border-hairline">
             <Link
               href="/profile"
               className="text-xs font-bold text-primary hover:underline inline-flex items-center gap-1 transition-colors"
@@ -323,67 +360,73 @@ export function DashboardView() {
               <h3 className="text-base font-bold text-on-surface">Recommended for You</h3>
             </div>
             <p className="text-xs text-on-surface-variant mb-4">
-              Curated milestones to accelerate your career growth.
+              Core loop activities for {activeCareer.i18n.en.title}.
             </p>
 
             <div className="space-y-2.5">
               <div className="bg-surface-container-low border border-hairline rounded-xl p-3 flex items-center justify-between gap-3">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h4 className="text-xs font-bold text-on-surface truncate">Learn React Fundamentals</h4>
+                    <h4 className="text-xs font-bold text-on-surface truncate">
+                      Read a Study Lesson
+                    </h4>
                     <Badge variant="sky" className="text-[10px] px-2 py-0.5">
-                      Learning · 20m
+                      Study · +30 XP
                     </Badge>
                   </div>
                   <p className="text-[11px] text-on-surface-variant truncate mt-0.5">
-                    Strengthen your front-end development skills
+                    Short bilingual notes with key terms and read-aloud
                   </p>
                 </div>
                 <Link
-                  href="/modes"
+                  href="/modes/study"
                   className="px-3 py-1.5 rounded-lg bg-primary-container hover:bg-primary-fixed-dim text-on-primary-fixed text-xs font-bold flex-shrink-0 transition-colors"
                 >
-                  Start
+                  Study
                 </Link>
               </div>
 
               <div className="bg-surface-container-low border border-hairline rounded-xl p-3 flex items-center justify-between gap-3">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h4 className="text-xs font-bold text-on-surface truncate">Practice Data Structures</h4>
+                    <h4 className="text-xs font-bold text-on-surface truncate">
+                      Take a 5-Question Quiz
+                    </h4>
                     <Badge variant="sage" className="text-[10px] px-2 py-0.5">
-                      Practice · +100 XP
+                      Quiz · +20–60 XP
                     </Badge>
                   </div>
                   <p className="text-[11px] text-on-surface-variant truncate mt-0.5">
-                    Improve your problem-solving and coding skills
+                    Instant feedback and star ratings
                   </p>
                 </div>
                 <Link
-                  href="/modes"
+                  href="/modes/quiz"
                   className="px-3 py-1.5 rounded-lg bg-surface-container-lowest border border-hairline hover:bg-surface-container text-on-surface text-xs font-semibold flex-shrink-0 transition-colors"
                 >
-                  Practice
+                  Quiz
                 </Link>
               </div>
 
               <div className="bg-surface-container-low border border-hairline rounded-xl p-3 flex items-center justify-between gap-3">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h4 className="text-xs font-bold text-on-surface truncate">Explore Backend Development</h4>
-                    <Badge variant="sunshine" className="text-[10px] px-2 py-0.5">
-                      Career Skills
+                    <h4 className="text-xs font-bold text-on-surface truncate">
+                      Run a Workplace Scenario
+                    </h4>
+                    <Badge variant="blush" className="text-[10px] px-2 py-0.5">
+                      Simulation · up to 120 XP
                     </Badge>
                   </div>
                   <p className="text-[11px] text-on-surface-variant truncate mt-0.5">
-                    Discover essential backend technologies
+                    Make branching decisions with mentor feedback
                   </p>
                 </div>
                 <Link
-                  href="/paths"
+                  href="/simulation"
                   className="px-3 py-1.5 rounded-lg bg-surface-container-lowest border border-hairline hover:bg-surface-container text-on-surface text-xs font-semibold flex-shrink-0 transition-colors"
                 >
-                  Explore
+                  Simulate
                 </Link>
               </div>
             </div>
@@ -394,7 +437,7 @@ export function DashboardView() {
               href="/modes"
               className="text-xs font-bold text-primary hover:underline inline-flex items-center gap-1 transition-colors"
             >
-              <span>View All Recommendations</span>
+              <span>View Practice Modes</span>
               <span className="text-xs">&gt;</span>
             </Link>
           </div>

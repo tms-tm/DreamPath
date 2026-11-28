@@ -1,77 +1,67 @@
 export interface LeaderboardEntry {
-  rank: number;
-  initial: string;
-  name: string;
-  careerTitle: string;
-  pointsXp: number;
-  earningsUsd: number;
+  username: string;
+  avatarChar: string;
+  totalXp: number;
+  simulatedSalary: number;
+  activeCareerId: string;
   isCurrentUser?: boolean;
 }
 
 export const LEADERBOARD_ENTRIES: LeaderboardEntry[] = [
   {
-    rank: 1,
-    initial: 'N',
-    name: 'Nadia K.',
-    careerTitle: 'Cyber Security Lead',
-    pointsXp: 8940,
-    earningsUsd: 12400,
+    username: "@pixel_aiman",
+    avatarChar: "A",
+    totalXp: 1420,
+    simulatedSalary: 3250,
+    activeCareerId: "software-engineer",
   },
   {
-    rank: 2,
-    initial: 'T',
-    name: 'Theo J.',
-    careerTitle: 'Senior Pediatrician',
-    pointsXp: 8720,
-    earningsUsd: 11980,
+    username: "@nurul_lex",
+    avatarChar: "N",
+    totalXp: 1310,
+    simulatedSalary: 2980,
+    activeCareerId: "junior-lawyer",
   },
   {
-    rank: 3,
-    initial: 'A',
-    name: 'Amir S.',
-    careerTitle: 'Human Rights Counsel',
-    pointsXp: 8340,
-    earningsUsd: 11250,
+    username: "@dr_farah",
+    avatarChar: "F",
+    totalXp: 1240,
+    simulatedSalary: 3420,
+    activeCareerId: "future-doctor",
   },
   {
-    rank: 4,
-    initial: 'S',
-    name: 'Sofia Lin',
-    careerTitle: 'Full-Stack Developer',
-    pointsXp: 7420,
-    earningsUsd: 9800,
+    username: "@ux_mei",
+    avatarChar: "M",
+    totalXp: 1080,
+    simulatedSalary: 2680,
+    activeCareerId: "product-designer",
   },
   {
-    rank: 5,
-    initial: 'D',
-    name: 'Damon Vance',
-    careerTitle: 'AI Research Scientist',
-    pointsXp: 6890,
-    earningsUsd: 9150,
+    username: "@chef_danial",
+    avatarChar: "D",
+    totalXp: 960,
+    simulatedSalary: 2410,
+    activeCareerId: "master-chef",
   },
   {
-    rank: 6,
-    initial: 'M',
-    name: 'Mei Ling',
-    careerTitle: 'Constitutional Arbitrator',
-    pointsXp: 5400,
-    earningsUsd: 7300,
+    username: "@coder_syafiq",
+    avatarChar: "S",
+    totalXp: 840,
+    simulatedSalary: 2390,
+    activeCareerId: "software-engineer",
   },
   {
-    rank: 7,
-    initial: 'Z',
-    name: 'Zackariah O.',
-    careerTitle: 'Neurologist',
-    pointsXp: 4950,
-    earningsUsd: 6800,
+    username: "@lex_kavita",
+    avatarChar: "K",
+    totalXp: 760,
+    simulatedSalary: 2210,
+    activeCareerId: "junior-lawyer",
   },
   {
-    rank: 8,
-    initial: 'K',
-    name: 'Kayla M.',
-    careerTitle: 'Design Lead',
-    pointsXp: 4320,
-    earningsUsd: 5900,
+    username: "@med_hariz",
+    avatarChar: "H",
+    totalXp: 680,
+    simulatedSalary: 2540,
+    activeCareerId: "future-doctor",
   },
 ];
-
