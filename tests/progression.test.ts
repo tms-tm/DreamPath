@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import {
   DAILY_QUEST_XP,
   STUDY_LESSON_XP,
@@ -10,6 +10,7 @@ import {
   computeSimulatedSalary,
   type ProgressionMathState,
 } from '@/features/progression/math';
+import { useProgressionStore } from '@/stores/useProgressionStore';
 
 describe('progression math', () => {
   describe('computeLevel', () => {
@@ -169,6 +170,79 @@ describe('progression math', () => {
 
       expect(boosted.skills.javascript.competency).toBe(100);
       expect(boosted.skills.accessibility.competency).toBe(0);
+    });
+  });
+
+  describe('useProgressionStore integration', () => {
+    beforeEach(() => {
+      useProgressionStore.setState({
+        totalXp: 0,
+        simulatedSalary: 1860,
+        completedQuests: [],
+        completedActivityIds: [],
+        skills: {
+          'html-css': { xp: 0, competency: 0 },
+          javascript: { xp: 0, competency: 0 },
+          'problem-solving': { xp: 0, competency: 0 },
+          communication: { xp: 0, competency: 0 },
+          accessibility: { xp: 0, competency: 0 },
+        },
+        profile: {
+          ...useProgressionStore.getState().profile,
+          currentLevel: 1,
+          activeCareerId: 'software-engineer',
+          missionsCompleted: 0,
+        },
+      });
+    });
+
+    it('recalculates salary on career switch using unified math formula', () => {
+      useProgressionStore.getState().setActiveCareer('master-chef');
+      // master-chef baseSalary = 4500 -> round(4500 * 0.30) = 1350
+      expect(useProgressionStore.getState().simulatedSalary).toBe(1350);
+
+      useProgressionStore.getState().setActiveCareer('future-doctor');
+      // future-doctor baseSalary = 7500 -> round(7500 * 0.30) = 2250
+      expect(useProgressionStore.getState().simulatedSalary).toBe(2250);
+    });
+
+    it('ignores ad-hoc salaryDelta in applyReward and uses math formula', () => {
+      useProgressionStore.getState().applyReward({
+        xp: 120,
+        salaryDelta: 9999,
+        missionCountDelta: 1,
+      });
+
+      const state = useProgressionStore.getState();
+      expect(state.totalXp).toBe(120);
+      // software-engineer baseSalary = 6200 -> round(6200 * 0.30 + 120) = 1980
+      expect(state.simulatedSalary).toBe(1980);
+      expect(state.profile.missionsCompleted).toBe(1);
+    });
+
+    it('awards quest XP and activity XP idempotently', () => {
+      useProgressionStore.getState().completeQuest('quest-1', DAILY_QUEST_XP);
+      useProgressionStore.getState().completeQuest('quest-1', DAILY_QUEST_XP);
+
+      expect(useProgressionStore.getState().totalXp).toBe(80);
+      expect(useProgressionStore.getState().completedActivityIds).toEqual(['quest-1']);
+      expect(useProgressionStore.getState().simulatedSalary).toBe(1860 + 80);
+
+      const first = useProgressionStore.getState().completeActivity({
+        activityId: 'study-1',
+        xpReward: STUDY_LESSON_XP,
+        skillImpacts: [{ skillId: 'javascript', xp: 30, competencyDelta: 10 }],
+      });
+      const replay = useProgressionStore.getState().completeActivity({
+        activityId: 'study-1',
+        xpReward: STUDY_LESSON_XP,
+        skillImpacts: [{ skillId: 'javascript', xp: 30, competencyDelta: 10 }],
+      });
+
+      expect(first.awardedXp).toBe(30);
+      expect(replay.awardedXp).toBe(0);
+      expect(useProgressionStore.getState().totalXp).toBe(110);
+      expect(useProgressionStore.getState().simulatedSalary).toBe(1860 + 110 + 30);
     });
   });
 });
