@@ -16,14 +16,10 @@ export interface UserProfile {
   currentLevel: number;
   educationTier: TierId;
   activeCareerId: string;
-  screenTimeUsedMinutes: number;
-  screenTimeMaxMinutes: number;
   readAloudEnabled: boolean;
   soundEffectsEnabled: boolean;
   reduceMotion: boolean;
   colorMode: 'dark' | 'light';
-  parentName: string;
-  parentEmail: string;
   streakDays: number;
   missionsCompleted: number;
   learningTimeMinutes: number;
@@ -53,9 +49,8 @@ interface ProgressionState {
   toggleColorMode: () => void;
   setEducationTier: (tier: TierId) => void;
   setActiveCareer: (careerId: string) => void;
-  setSettings: (settings: Partial<Pick<UserProfile, 'readAloudEnabled' | 'soundEffectsEnabled' | 'reduceMotion' | 'screenTimeMaxMinutes'>>) => void;
+  setSettings: (settings: Partial<Pick<UserProfile, 'readAloudEnabled' | 'soundEffectsEnabled' | 'reduceMotion'>>) => void;
   updateProfile: (updated: Partial<UserProfile>) => void;
-  addScreenTime: (mins: number) => void;
   
   applySkillImpacts: (impacts: Array<{ skillId: SkillId; xp: number; competencyDelta?: number }>) => void;
   applyReward: (reward: { xp?: number; salaryDelta?: number; missionCountDelta?: number }) => void;
@@ -131,14 +126,10 @@ export const useProgressionStore = create<ProgressionState>()(
         currentLevel: 4,
         educationTier: 'aurora',
         activeCareerId: 'software-engineer',
-        screenTimeUsedMinutes: 38,
-        screenTimeMaxMinutes: 60,
         readAloudEnabled: true,
         soundEffectsEnabled: true,
         reduceMotion: false,
         colorMode: 'dark',
-        parentName: 'Maria Rivera',
-        parentEmail: 'maria.rivera@example.com',
         streakDays: 7,
         missionsCompleted: 24,
         learningTimeMinutes: 272, // 4h 32m
@@ -184,17 +175,6 @@ export const useProgressionStore = create<ProgressionState>()(
 
       updateProfile: (updated) =>
         set((state) => ({ profile: { ...state.profile, ...updated } })),
-
-      addScreenTime: (mins) =>
-        set((state) => ({
-          profile: {
-            ...state.profile,
-            screenTimeUsedMinutes: Math.min(
-              state.profile.screenTimeMaxMinutes,
-              state.profile.screenTimeUsedMinutes + mins
-            ),
-          },
-        })),
 
       applySkillImpacts: (impacts) =>
         set((state) => {
