@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { BookOpen, GraduationCap, Play, Sparkles, Wallet } from 'lucide-react';
 import { Badge, Card, PageHeader } from '@/components/ui';
 import { CAREERS, getCareerById } from '@/content/careers';
-import { useProgressionStore } from '@/stores/useProgressionStore';
+import { useProgressionStore } from '@/features/progression/useProgressionStore';
 
 export default function ExploreCareersPage() {
   const { profile, setActiveCareer } = useProgressionStore();

@@ -7,21 +7,23 @@ import { Badge, Button, Card } from '@/components/ui';
 import { CAREERS, getCareerById } from '@/content/careers';
 import { OnboardingShell } from '@/features/onboarding/OnboardingShell';
 import { useOnboardingDraft } from '@/features/onboarding/useOnboardingDraft';
-import { useProgressionStore } from '@/stores/useProgressionStore';
+import { useProgressionStore } from '@/features/progression/useProgressionStore';
+import { useProfileStore } from '@/features/profile/useProfileStore';
 
 export function ConfirmView() {
   const router = useRouter();
   const { educationLevel, favouriteSubjects, selectedCareerId, resetQuizAnswers } =
     useOnboardingDraft();
-  const { setActiveCareer, profile } = useProgressionStore();
+  const { setActiveCareer: setProgressionCareer } = useProgressionStore();
+  const { activeCareerId, setActiveCareer, setAcademicProfile } = useProfileStore();
 
   const chosenCareer =
-    getCareerById(selectedCareerId ?? profile.activeCareerId) ?? CAREERS[0];
+    getCareerById(selectedCareerId ?? activeCareerId) ?? CAREERS[0];
 
   const handleLaunchDashboard = () => {
-    // Commit only activeCareerId (never raw quiz answers); educationLevel & favouriteSubjects
-    // persist in useProfileStore once T-28 splits the store.
+    setAcademicProfile(educationLevel, favouriteSubjects);
     setActiveCareer(chosenCareer.id);
+    setProgressionCareer(chosenCareer.id);
     resetQuizAnswers();
     router.push('/');
   };

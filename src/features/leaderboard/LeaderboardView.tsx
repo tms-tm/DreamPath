@@ -5,7 +5,7 @@ import { Trophy, Wallet } from 'lucide-react';
 import { Badge, Button, Card, PageHeader } from '@/components/ui';
 import { CAREERS, getCareerById } from '@/content/careers';
 import { LEADERBOARD_ENTRIES, type LeaderboardEntry } from '@/data/leaderboard';
-import { useProgressionStore } from '@/stores/useProgressionStore';
+import { useProgressionStore } from '@/features/progression/useProgressionStore';
 
 export function LeaderboardView() {
   const { profile, totalXp, simulatedSalary } = useProgressionStore();

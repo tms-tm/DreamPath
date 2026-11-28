@@ -1,11 +1,15 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useProgressionStore } from '@/stores/useProgressionStore';
+import { useProgressionStore } from '@/features/progression/useProgressionStore';
+import { useProfileStore } from '@/features/profile/useProfileStore';
+import { useSettingsStore } from '@/features/settings/useSettingsStore';
 import { EDUCATION_TIERS } from '@/types/career';
 
 export default function SettingsPage() {
-  const { profile, setSettings } = useProgressionStore();
+  const { profile } = useProgressionStore();
+  const { nickname, educationLevel } = useProfileStore();
+  const { readAloudEnabled, soundEffectsEnabled, reduceMotion, setSettings } = useSettingsStore();
 
   const [showPersonalInfo, setShowPersonalInfo] = useState(false);
 
@@ -79,7 +83,7 @@ export default function SettingsPage() {
               <label className="relative inline-flex items-center cursor-pointer">
                 <input
                   type="checkbox"
-                  checked={profile.readAloudEnabled}
+                  checked={readAloudEnabled}
                   onChange={(e) => handleAudioNarrationToggle(e.target.checked)}
                   className="sr-only peer"
                 />
@@ -103,7 +107,7 @@ export default function SettingsPage() {
               <label className="relative inline-flex items-center cursor-pointer">
                 <input
                   type="checkbox"
-                  checked={profile.soundEffectsEnabled}
+                  checked={soundEffectsEnabled}
                   onChange={(e) => setSettings({ soundEffectsEnabled: e.target.checked })}
                   className="sr-only peer"
                 />
@@ -127,7 +131,7 @@ export default function SettingsPage() {
               <label className="relative inline-flex items-center cursor-pointer">
                 <input
                   type="checkbox"
-                  checked={profile.reduceMotion}
+                  checked={reduceMotion}
                   onChange={(e) => setSettings({ reduceMotion: e.target.checked })}
                   className="sr-only peer"
                 />
@@ -177,12 +181,12 @@ export default function SettingsPage() {
                 <div className="mt-3 pt-3 border-t border-[#e4e2dc] text-xs space-y-1.5 animate-fade-in">
                   <div className="flex justify-between items-center">
                     <span className="text-[#43474c]">Nickname:</span>
-                    <span className="font-medium text-[#1b1c18]">{profile.name}</span>
+                    <span className="font-medium text-[#1b1c18]">{nickname}</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-[#43474c]">Education Level:</span>
                     <span className="font-medium text-[#1b1c18]">
-                      {currentTier.name} Tier ({currentTier.gradeDesc})
+                      {currentTier.name} Tier ({educationLevel})
                     </span>
                   </div>
                 </div>

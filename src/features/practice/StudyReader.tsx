@@ -7,7 +7,7 @@ import { ArrowLeft, BookOpen, CheckCircle2, Clock, Volume2, VolumeX } from 'luci
 import { Badge, Button, Card, PageHeader } from '@/components/ui';
 import { STUDY_LESSONS, getStudiesByCareer, getStudyById } from '@/content/studies';
 import { getDictionary, pickLocalized, type Locale } from '@/lib/i18n';
-import { useProgressionStore } from '@/stores/useProgressionStore';
+import { useProgressionStore } from '@/features/progression/useProgressionStore';
 import { speakText, stopSpeaking } from '@/utils/sound';
 
 export function StudyReader() {

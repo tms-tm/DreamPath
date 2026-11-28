@@ -7,7 +7,7 @@ import { ArrowLeft, CheckCircle2, RotateCcw, Star, XCircle } from 'lucide-react'
 import { Badge, Button, Card, PageHeader, ProgressBar } from '@/components/ui';
 import { QUIZZES, getQuizById, getQuizzesByCareer } from '@/content/quizzes';
 import { getDictionary, pickLocalized, type Locale } from '@/lib/i18n';
-import { useProgressionStore } from '@/stores/useProgressionStore';
+import { useProgressionStore } from '@/features/progression/useProgressionStore';
 import { scoreQuizSubmission, type QuizScoreResult } from '@/features/practice/logic';
 
 export function QuizPlayer() {

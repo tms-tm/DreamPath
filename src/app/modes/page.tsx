@@ -8,7 +8,7 @@ import { getCareerById, CAREERS } from '@/content/careers';
 import { getQuizzesByCareer, QUIZZES } from '@/content/quizzes';
 import { getScenariosByCareer, SCENARIOS } from '@/content/scenarios';
 import { getStudiesByCareer, STUDY_LESSONS } from '@/content/studies';
-import { useProgressionStore } from '@/stores/useProgressionStore';
+import { useProgressionStore } from '@/features/progression/useProgressionStore';
 
 export default function PracticeModesPage() {
   const { profile, totalXp, completedActivityIds } = useProgressionStore();

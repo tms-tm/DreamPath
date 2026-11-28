@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Compass, Home, Layers, Settings, Sparkles, Trophy, User } from 'lucide-react';
 import { Card } from '@/components/ui';
-import { useProgressionStore } from '@/stores/useProgressionStore';
+import { useProgressionStore } from '@/features/progression/useProgressionStore';
 import { EDUCATION_TIERS } from '@/types/career';
 
 export function Sidebar() {

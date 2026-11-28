@@ -5,24 +5,33 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Bell, ChevronDown, Volume2, VolumeX } from 'lucide-react';
 import { Button } from '@/components/ui';
-import { useProgressionStore } from '@/stores/useProgressionStore';
+import { useProgressionStore } from '@/features/progression/useProgressionStore';
+import { useProfileStore } from '@/features/profile/useProfileStore';
+import { useSettingsStore } from '@/features/settings/useSettingsStore';
 import { CAREER_PATHS } from '@/types/career';
 import { speakText, stopSpeaking } from '@/utils/sound';
 
 export function Header() {
   const pathname = usePathname();
-  const { profile, setSettings, setActiveCareer } = useProgressionStore();
+  const { setActiveCareer: setProgressionCareer } = useProgressionStore();
+  const { nickname, avatarChar, activeCareerId, setActiveCareer } = useProfileStore();
+  const { readAloudEnabled, setSettings } = useSettingsStore();
   const activeCareer =
-    CAREER_PATHS.find((c) => c.id === profile.activeCareerId) || CAREER_PATHS[0];
+    CAREER_PATHS.find((c) => c.id === activeCareerId) || CAREER_PATHS[0];
 
   const handleAudioToggle = () => {
-    const nextVal = !profile.readAloudEnabled;
+    const nextVal = !readAloudEnabled;
     setSettings({ readAloudEnabled: nextVal });
     if (nextVal) {
-      speakText(`Voice assistance enabled for ${profile.name}.`);
+      speakText(`Voice assistance enabled for ${nickname}.`);
     } else {
       stopSpeaking();
     }
+  };
+
+  const handleCareerChange = (careerId: string) => {
+    setActiveCareer(careerId);
+    setProgressionCareer(careerId);
   };
 
   const isProfile = pathname === '/profile';
@@ -35,13 +44,13 @@ export function Header() {
         ) : (
           <>
             <h1 className="text-lg font-bold tracking-tight text-on-surface">
-              Good evening, {profile.name}
+              Good evening, {nickname}
             </h1>
 
             <div className="relative">
               <select
                 value={activeCareer.id}
-                onChange={(e) => setActiveCareer(e.target.value)}
+                onChange={(e) => handleCareerChange(e.target.value)}
                 aria-label="Active career track"
                 className="appearance-none inline-flex items-center gap-1.5 pl-3 pr-8 py-1 rounded-full border border-hairline bg-surface-container-lowest text-xs font-semibold text-on-surface hover:border-outline transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/30"
               >
@@ -62,14 +71,14 @@ export function Header() {
 
       <div className="flex items-center gap-2.5">
         <Button
-          variant={profile.readAloudEnabled ? 'primary' : 'secondary'}
+          variant={readAloudEnabled ? 'primary' : 'secondary'}
           size="sm"
           onClick={handleAudioToggle}
-          title={profile.readAloudEnabled ? 'Voice Assist On' : 'Voice Assist Off'}
-          aria-label={profile.readAloudEnabled ? 'Disable voice assist' : 'Enable voice assist'}
+          title={readAloudEnabled ? 'Voice Assist On' : 'Voice Assist Off'}
+          aria-label={readAloudEnabled ? 'Disable voice assist' : 'Enable voice assist'}
           className="w-9 h-9 p-0 rounded-full"
         >
-          {profile.readAloudEnabled ? (
+          {readAloudEnabled ? (
             <Volume2 className="w-4 h-4" aria-hidden="true" />
           ) : (
             <VolumeX className="w-4 h-4" aria-hidden="true" />
@@ -90,7 +99,7 @@ export function Header() {
           aria-label="Open profile"
           className="w-9 h-9 rounded-full bg-primary-fixed flex items-center justify-center shrink-0 ml-1 text-on-primary-fixed font-bold text-sm shadow-soft hover:opacity-90 transition-opacity"
         >
-          {profile.avatarChar || 'D'}
+          {avatarChar || 'D'}
         </Link>
       </div>
     </header>

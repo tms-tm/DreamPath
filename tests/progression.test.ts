@@ -10,7 +10,7 @@ import {
   computeSimulatedSalary,
   type ProgressionMathState,
 } from '@/features/progression/math';
-import { useProgressionStore } from '@/stores/useProgressionStore';
+import { useProgressionStore } from '@/features/progression/useProgressionStore';
 
 describe('progression math', () => {
   describe('computeLevel', () => {

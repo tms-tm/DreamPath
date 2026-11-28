@@ -4,7 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { Check, FileText, Lock, Play, Sparkles } from 'lucide-react';
 import { Badge, Card, PageHeader, ProgressBar } from '@/components/ui';
-import { useProgressionStore } from '@/stores/useProgressionStore';
+import { useProgressionStore } from '@/features/progression/useProgressionStore';
 import { CAREER_PATHS } from '@/types/career';
 
 export function CareerExplorerView() {

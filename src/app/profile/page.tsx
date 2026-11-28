@@ -6,11 +6,13 @@ import { Award, Compass, Flame, RotateCcw, Shield, Wallet } from 'lucide-react';
 import { Badge, Card, PageHeader, ProgressBar } from '@/components/ui';
 import { CAREERS, getCareerById } from '@/content/careers';
 import { XP_PER_LEVEL } from '@/features/progression/math';
-import { useProgressionStore } from '@/stores/useProgressionStore';
+import { useProgressionStore } from '@/features/progression/useProgressionStore';
+import { useProfileStore } from '@/features/profile/useProfileStore';
 
 export default function ProfilePage() {
   const { profile, totalXp, simulatedSalary, skills, completedActivityIds } = useProgressionStore();
-  const activeCareer = getCareerById(profile.activeCareerId) ?? CAREERS[0];
+  const { nickname, activeCareerId } = useProfileStore();
+  const activeCareer = getCareerById(activeCareerId) ?? CAREERS[0];
 
   const xpIntoLevel = totalXp % XP_PER_LEVEL;
   const xpToNextLevel = XP_PER_LEVEL - xpIntoLevel;
@@ -28,7 +30,7 @@ export default function ProfilePage() {
     <div className="max-w-6xl mx-auto py-6 px-4 sm:px-6 pb-24 flex flex-col gap-7 animate-fade-in">
       <PageHeader
         eyebrow={`Nebula Tier · Lv. ${profile.currentLevel}`}
-        title={profile.name}
+        title={nickname}
         subtitle={`Target career: ${activeCareer.i18n.en.title}`}
         action={
           <div className="flex flex-wrap items-center gap-2.5">

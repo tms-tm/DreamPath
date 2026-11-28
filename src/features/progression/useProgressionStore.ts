@@ -34,11 +34,10 @@ interface ProgressionState {
   totalXp: number;
   simulatedSalary: number;
   skills: Record<SkillId, SkillProgress>;
-  careerProgress: Record<string, number>; // careerId -> progressPercent
+  careerProgress: Record<string, number>;
   completedQuests: string[];
   completedActivityIds: string[];
 
-  // Actions
   setEducationTier: (tier: TierId) => void;
   setActiveCareer: (careerId: string) => void;
   setSettings: (

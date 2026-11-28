@@ -21,7 +21,7 @@ import {
 import { Badge, Button, Card, ProgressBar } from '@/components/ui';
 import { CAREERS, getCareerById } from '@/content/careers';
 import { DAILY_QUEST_XP, XP_PER_LEVEL } from '@/features/progression/math';
-import { useProgressionStore } from '@/stores/useProgressionStore';
+import { useProgressionStore } from '@/features/progression/useProgressionStore';
 
 export function DashboardView() {
   const {

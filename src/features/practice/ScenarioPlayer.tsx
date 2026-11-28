@@ -15,7 +15,7 @@ import {
 import { Badge, Button, Card, PageHeader } from '@/components/ui';
 import { getScenariosByCareer, getScenarioById, SCENARIOS } from '@/content/scenarios';
 import { getDictionary, pickLocalized, type Locale } from '@/lib/i18n';
-import { useProgressionStore } from '@/stores/useProgressionStore';
+import { useProgressionStore } from '@/features/progression/useProgressionStore';
 import {
   applyScenarioChoice,
   computeScenarioTotalXp,

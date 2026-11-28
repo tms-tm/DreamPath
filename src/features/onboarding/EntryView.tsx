@@ -6,7 +6,7 @@ import { ArrowRight, ShieldCheck, Sparkles, UserCheck } from 'lucide-react';
 import { Button, Card } from '@/components/ui';
 import { OnboardingShell } from '@/features/onboarding/OnboardingShell';
 import { useOnboardingDraft } from '@/features/onboarding/useOnboardingDraft';
-import { useProgressionStore } from '@/stores/useProgressionStore';
+import { useProgressionStore } from '@/features/progression/useProgressionStore';
 
 export function EntryView() {
   const router = useRouter();
