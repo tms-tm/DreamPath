@@ -1,0 +1,98 @@
+- generic [ref=e5]:
+  - generic [ref=e6]:
+    - generic [ref=e7]:
+      - generic [ref=e10]:
+        - application "Figma Design, 1 item selected" [active] [ref=e18]
+        - status [ref=e19]: Screenreader support for the board is currently disabled. To enable it via Accessibility settings, press Ctrl+K, type Accessibility Settings, and press Enter. To see available keyboard shortcuts, enter Ctrl+Shift+Question mark .
+        - status [ref=e21]
+        - generic:
+          - generic:
+            - generic:
+              - region "Comments on canvas":
+                - button "Create new comment"
+        - generic:
+          - region "Left sidebar":
+            - generic [ref=e22]:
+              - button "Main menu" [ref=e23]
+              - button "Expand UI for file named dpreal (Copy)" [ref=e24]:
+                - generic:
+                  - generic:
+                    - generic:
+                      - button "dpreal (Copy), file name": dpreal (Copy)
+                      - generic: File name
+        - generic [ref=e27]:
+          - generic [ref=e29]:
+            - generic [ref=e31]:
+              - generic:
+                - generic:
+                  - group "People":
+                    - generic [ref=e33]:
+                      - button "Follow WONG YIK SHENG" [ref=e34]
+                      - img [ref=e42]:
+                        - generic [ref=e43]: W
+            - button "Multiplayer tools" [ref=e47]
+          - button "25%, zoom and view options" [ref=e58]: 25%
+          - generic [ref=e60]:
+            - generic [ref=e61]:
+              - button "Present" [ref=e62]
+              - button "Prototype view" [ref=e63]
+            - button "Share" [ref=e65]
+      - generic:
+        - generic:
+          - generic:
+            - region "Application toolbar":
+              - generic [ref=e66]:
+                - toolbar "Editor" [ref=e68]:
+                  - generic [ref=e70]:
+                    - generic:
+                      - generic [ref=e73]:
+                        - generic [ref=e74]:
+                          - button "Move" [ref=e75]
+                          - button "Hand tool" [pressed] [ref=e76]
+                          - button "Comment" [ref=e77]
+                        - group "Frame" [ref=e79]:
+                          - button "Frame" [ref=e80]
+                          - button "Region tools" [ref=e81]
+                        - group "Rectangle" [ref=e82]:
+                          - button "Rectangle" [ref=e83]
+                          - button "Shape tools" [ref=e84]
+                        - group "Pen" [ref=e85]:
+                          - button "Pen" [ref=e86]
+                          - button "Creation tools" [ref=e87]
+                        - button "Text" [ref=e88]
+                        - button "Actions" [ref=e89]
+                      - text: Request sent
+                  - radiogroup "Toolbelt Mode" [ref=e93]:
+                    - generic [ref=e95]:
+                      - generic [ref=e97]:
+                        - radio "Design" [checked] [ref=e98]
+                        - generic [ref=e102]: Design
+                      - generic [ref=e103]:
+                        - radio "Motion" [ref=e104]
+                        - generic [ref=e108]: Motion
+                      - generic [ref=e109]:
+                        - radio "Dev Mode" [ref=e110]
+                        - generic [ref=e114]: Dev Mode
+                - generic [ref=e115]:
+                  - generic [ref=e116]: Sign up to comment, edit, inspect and more.
+                  - generic [ref=e117]:
+                    - button "Sign up" [ref=e118]
+                    - button "Continue with Google" [ref=e121]:
+                      - generic: Continue
+    - region "Help/zoom toolbar" [ref=e124]:
+      - toolbar "Help/zoom toolbar" [ref=e126]:
+        - button "Help" [ref=e129]
+  - generic:
+    - status
+    - group [ref=e131]:
+      - alert [ref=e133]
+      - alert [ref=e135]
+    - region "Consent Manager" [ref=e137]:
+      - generic [ref=e138]:
+        - text: This website uses cookies, pixel tags, and local storage for performance, personalization, and marketing purposes. We use our own cookies and some from third parties. Only essential cookies are turned on by default.
+        - link "Cookies settings" [ref=e139] [cursor=pointer]:
+          - /url: /consent-preferences/
+      - generic [ref=e140]:
+        - button "Do not allow cookies" [ref=e141]
+        - button "Allow all cookies" [ref=e142]
+      - button "Dismiss" [ref=e144]

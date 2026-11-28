@@ -1,194 +1,198 @@
 'use client';
 
-import React, { useState } from 'react';
-import {
-  User,
-  Calendar,
-  Award,
-  Clock,
-  Sparkles,
-  TrendingUp,
-  Edit2,
-  Check,
-  Code2,
-  Zap
-} from 'lucide-react';
+import React from 'react';
+import Link from 'next/link';
 import { useProgressionStore } from '@/stores/useProgressionStore';
-import { EDUCATION_TIERS, CAREER_PATHS } from '@/types/career';
 
 export default function ProfilePage() {
-  const { profile, totalXp, simulatedSalary, skills, updateProfile } = useProgressionStore();
-  const [isEditing, setIsEditing] = useState(false);
-  const [nameInput, setNameInput] = useState(profile.name);
+  const { profile, totalXp, simulatedSalary } = useProgressionStore();
 
-  const tier = EDUCATION_TIERS[profile.educationTier] || EDUCATION_TIERS.aurora;
-  const activeCareer = CAREER_PATHS.find((c) => c.id === profile.activeCareerId) || CAREER_PATHS[0];
-
-  const handleSaveName = () => {
-    updateProfile({ name: nameInput });
-    setIsEditing(false);
-  };
+  const skillEntries = [
+    { name: 'Problem Solving', pct: 82, xp: '510 XP' },
+    { name: 'HTML & CSS', pct: 78, xp: '450 XP' },
+    { name: 'Communication', pct: 64, xp: '260 XP' },
+    { name: 'JavaScript', pct: 55, xp: '320 XP' },
+    { name: 'Accessibility', pct: 48, xp: '190 XP' },
+  ];
 
   return (
-    <div className="space-y-8 max-w-5xl mx-auto">
-      {/* Header */}
-      <div>
-        <div className="text-xs font-bold uppercase tracking-wider text-indigo-400">
-          YOUR IDENTITY
-        </div>
-        <h1 className="text-3xl font-extrabold text-white tracking-tight mt-1">
-          Explorer profile
-        </h1>
-        <p className="mt-2 text-slate-300 text-sm max-w-2xl leading-relaxed">
-          Your personal information and complete journey in one place.
-        </p>
-      </div>
-
-      {/* Main Profile Card matching Figma */}
-      <div className="p-6 sm:p-8 rounded-3xl bg-[#0e1224] border border-[#1e233d] space-y-6">
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-6 border-b border-[#1b203c] pb-6">
-          <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-indigo-500 to-purple-600 text-white font-black text-2xl flex items-center justify-center shadow-lg">
-              {profile.avatarChar}
-            </div>
-
+    <div className="max-w-[1100px] mx-auto py-8 px-4 sm:px-8 pb-28 flex flex-col gap-8 animate-fade-in">
+      {/* 1. IDENTITY CARD */}
+      <section className="bg-white rounded-2xl p-6 border border-[#e4e2dc] shadow-[0_2px_12px_rgba(27,28,24,0.03)] flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="flex items-start sm:items-center gap-5">
+          {/* Large initial badge "A" */}
+          <div className="w-16 h-16 rounded-2xl bg-[#cfe2fa] text-[#091d2e] text-2xl font-bold flex items-center justify-center shrink-0">
+            {profile.avatarChar || 'A'}
+          </div>
+          <div className="flex flex-col gap-1">
+            <h2 className="text-[26px] font-bold text-[#1b1c18] tracking-tight">
+              {profile.name}
+            </h2>
             <div>
-              <div className="flex items-center gap-3">
-                {isEditing ? (
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="text"
-                      value={nameInput}
-                      onChange={(e) => setNameInput(e.target.value)}
-                      className="px-3 py-1 text-lg font-bold rounded-xl bg-[#141830] border border-indigo-500 text-white focus:outline-none"
-                    />
-                    <button
-                      onClick={handleSaveName}
-                      className="p-1.5 rounded-lg bg-emerald-600 text-white hover:bg-emerald-500"
-                    >
-                      <Check className="w-4 h-4" />
-                    </button>
-                  </div>
-                ) : (
-                  <h2 className="text-2xl font-bold text-white">{profile.name}</h2>
-                )}
-                <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
-                  PRIMARY EXPLORER
-                </span>
-              </div>
-              <div className="text-xs text-slate-400 mt-1">
-                {profile.handle} • ID DR-10482
-              </div>
+              <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-[#cfe2fa] text-[#36485c] text-[12px] font-semibold">
+                <span className="material-symbols-outlined text-[14px]">military_tech</span>
+                Galaxy Tier · Lv. 4
+              </span>
             </div>
+            <p className="text-[14px] text-[#43474c] mt-0.5">SMK Bandar Utama Damansara</p>
+            <p className="text-[14px] font-medium text-[#4e6074]">
+              Target career: Software Engineer
+            </p>
           </div>
+        </div>
 
-          <button
-            onClick={() => setIsEditing(!isEditing)}
-            className="px-4 py-2 rounded-xl bg-[#141830] hover:bg-[#1a2040] text-slate-300 text-xs font-bold border border-[#222a55] transition-all flex items-center gap-2"
+        <div className="flex items-center gap-3 shrink-0 self-start md:self-auto">
+          <Link
+            href="/settings"
+            className="rounded-xl px-4 py-2 text-[14px] font-semibold border border-[#c4c6cd] text-[#1b1c18] bg-white hover:bg-[#f6f4ed] transition-colors"
           >
-            <Edit2 className="w-3.5 h-3.5" />
-            <span>{isEditing ? 'Cancel' : 'Edit profile'}</span>
-          </button>
+            Edit Profile
+          </Link>
+          <Link
+            href="/resume-builder"
+            className="rounded-xl px-5 py-2.5 text-[14px] font-semibold bg-[#cfe2fa] text-[#091d2e] hover:bg-[#b5c8e0] shadow-xs transition-all flex items-center gap-2"
+          >
+            <span>Open Resume Builder</span>
+            <span className="text-base font-normal">→</span>
+          </Link>
+        </div>
+      </section>
+
+      {/* 2. STAT STRIP (4 cards in a grid) */}
+      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="bg-white rounded-2xl p-6 border border-[#e4e2dc] shadow-[0_2px_8px_rgba(27,28,24,0.03)] flex flex-col justify-between">
+          <span className="text-[12px] font-medium text-[#43474c] uppercase tracking-wider">
+            Total XP
+          </span>
+          <div className="my-2">
+            <div className="text-[28px] font-bold text-[#1b1c18] tracking-tight">
+              {totalXp.toLocaleString()} XP
+            </div>
+            <div className="w-full h-1.5 rounded-full bg-[#e4e2dc] mt-2 overflow-hidden">
+              <div className="h-full rounded-full bg-[#4e6074]" style={{ width: '75%' }}></div>
+            </div>
+          </div>
+          <span className="text-[12px] text-[#43474c]">220 XP to Level 5</span>
         </div>
 
-        {/* 4 Detail Grid Cells matching Figma */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="p-4 rounded-2xl bg-[#141830] border border-[#20274e]">
-            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">
-              AGE
-            </div>
-            <div className="text-base font-bold text-white mt-1">
-              {profile.age} years old
-            </div>
-          </div>
-
-          <div className="p-4 rounded-2xl bg-[#141830] border border-[#20274e]">
-            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">
-              JOINED
-            </div>
-            <div className="text-base font-bold text-white mt-1">
-              {profile.joinedDate}
+        <div className="bg-white rounded-2xl p-6 border border-[#e4e2dc] shadow-[0_2px_8px_rgba(27,28,24,0.03)] flex flex-col justify-between">
+          <span className="text-[12px] font-medium text-[#43474c] uppercase tracking-wider">
+            Simulated Salary
+          </span>
+          <div className="my-2">
+            <div className="text-[28px] font-bold text-[#1b1c18] tracking-tight">
+              RM {simulatedSalary.toLocaleString()} <span className="text-[18px] font-medium text-[#43474c]">/mo</span>
             </div>
           </div>
+          <span className="text-[12px] text-[#43474c]">Virtual career earnings</span>
+        </div>
 
-          <div className="p-4 rounded-2xl bg-[#141830] border border-[#20274e]">
-            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">
-              ACTIVE PATH
-            </div>
-            <div className="text-base font-bold text-white mt-1 truncate">
-              {activeCareer.title}
+        <div className="bg-white rounded-2xl p-6 border border-[#e4e2dc] shadow-[0_2px_8px_rgba(27,28,24,0.03)] flex flex-col justify-between">
+          <span className="text-[12px] font-medium text-[#43474c] uppercase tracking-wider">
+            Missions completed
+          </span>
+          <div className="my-2">
+            <div className="text-[28px] font-bold text-[#1b1c18] tracking-tight">
+              {profile.missionsCompleted || 24}
             </div>
           </div>
+          <span className="text-[12px] text-[#43474c]">Across 3 career fields</span>
+        </div>
 
-          <div className="p-4 rounded-2xl bg-[#141830] border border-[#20274e]">
-            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">
-              CURRENT LEVEL
+        <div className="bg-white rounded-2xl p-6 border border-[#e4e2dc] shadow-[0_2px_8px_rgba(27,28,24,0.03)] flex flex-col justify-between">
+          <span className="text-[12px] font-medium text-[#43474c] uppercase tracking-wider">
+            Learning streak
+          </span>
+          <div className="my-2">
+            <div className="text-[28px] font-bold text-[#1b1c18] tracking-tight">
+              {profile.streakDays || 7} days
             </div>
-            <div className="text-base font-bold text-white mt-1 truncate">
-              Level {profile.currentLevel} • Pathfinder
+          </div>
+          <span className="text-[12px] text-[#43474c]">Active every day this week</span>
+        </div>
+      </section>
+
+      {/* 3. TWO COLUMNS (60% / 40% split, gap-8, top-aligned) */}
+      <section className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        {/* Left Column (60% -> lg:col-span-7) */}
+        <div className="lg:col-span-7">
+          <div className="bg-white rounded-2xl p-6 border border-[#e4e2dc] shadow-[0_2px_8px_rgba(27,28,24,0.03)]">
+            <h3 className="text-[20px] font-bold text-[#1b1c18]">
+              Skills you&apos;ve shown in DreamPath
+            </h3>
+            <p className="text-[14px] text-[#43474c] mt-1 mb-8">
+              Auto-synced to your Resume Builder
+            </p>
+            <div className="space-y-6">
+              {skillEntries.map((skill) => (
+                <div key={skill.name} className="flex flex-col gap-1.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[14px] font-semibold text-[#1b1c18]">{skill.name}</span>
+                    <span className="text-[14px] font-bold text-[#1b1c18]">{skill.pct}%</span>
+                  </div>
+                  <span className="text-[12px] text-[#43474c]">{skill.xp}</span>
+                  <div className="w-full h-2 rounded-full bg-[#f0eee7] overflow-hidden mt-0.5">
+                    <div
+                      className="h-full rounded-full bg-[#b5c8e0]"
+                      style={{ width: `${skill.pct}%` }}
+                    ></div>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
 
-        {/* 3 Metric Summary Boxes matching Figma */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
-          <div className="p-4 rounded-2xl bg-[#101429] border border-[#1d2242] text-center">
-            <div className="text-2xl font-black text-indigo-400">
-              {totalXp.toLocaleString()}
-            </div>
-            <div className="text-xs text-slate-400 font-semibold mt-1">Total XP</div>
-          </div>
-
-          <div className="p-4 rounded-2xl bg-[#101429] border border-[#1d2242] text-center">
-            <div className="text-2xl font-black text-amber-400">
-              {profile.missionsCompleted}
-            </div>
-            <div className="text-xs text-slate-400 font-semibold mt-1">Missions</div>
-          </div>
-
-          <div className="p-4 rounded-2xl bg-[#101429] border border-[#1d2242] text-center">
-            <div className="text-2xl font-black text-emerald-400">
-              {profile.streakDays} days
-            </div>
-            <div className="text-xs text-slate-400 font-semibold mt-1">Best streak</div>
-          </div>
-        </div>
-      </div>
-
-      {/* Skill Competencies from SPEC.md */}
-      <div className="p-6 sm:p-8 rounded-3xl bg-[#0e1224] border border-[#1e233d] space-y-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="text-xs font-bold uppercase tracking-wider text-indigo-400">
-              COMPETENCY PORTFOLIO
-            </div>
-            <h3 className="text-xl font-bold text-white mt-1">Verifiable Skills</h3>
-          </div>
-          <span className="text-xs text-slate-400">O*NET & ESCO Aligned</span>
-        </div>
-
-        <div className="space-y-4 pt-2">
-          {Object.entries(skills).map(([skillId, data]) => (
-            <div key={skillId} className="space-y-1.5">
-              <div className="flex justify-between text-xs">
-                <span className="font-bold text-slate-200 capitalize">
-                  {skillId.replace('-', ' ')}
-                </span>
-                <span className="font-semibold text-indigo-400">
-                  {data.competency}% ({data.xp} XP)
-                </span>
+        {/* Right Column (40% -> lg:col-span-5) */}
+        <div className="lg:col-span-5 flex flex-col gap-6">
+          {/* Card A: Earned Badges */}
+          <div className="bg-white rounded-2xl p-6 border border-[#e4e2dc] shadow-[0_2px_8px_rgba(27,28,24,0.03)]">
+            <h3 className="text-[18px] font-bold text-[#1b1c18] mb-4">Earned badges</h3>
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center gap-2.5 px-4 py-2.5 rounded-2xl bg-[#cfe2fa]/60 text-[#091d2e]">
+                <span className="material-symbols-outlined text-[18px] text-[#4e6074]">shield</span>
+                <span className="text-[13px] font-medium">Cyber Guardian</span>
               </div>
-              <div className="w-full bg-[#1b1f3b] h-2.5 rounded-full overflow-hidden">
-                <div
-                  className="bg-gradient-to-r from-indigo-500 to-emerald-400 h-full rounded-full transition-all duration-500"
-                  style={{ width: `${data.competency}%` }}
-                />
+              <div className="flex items-center gap-2.5 px-4 py-2.5 rounded-2xl bg-[#cfe2fa]/60 text-[#091d2e]">
+                <span className="material-symbols-outlined text-[18px] text-[#4e6074]">balance</span>
+                <span className="text-[13px] font-medium">Sharp Advocate</span>
+              </div>
+              <div className="flex items-center gap-2.5 px-4 py-2.5 rounded-2xl bg-[#cfe2fa]/60 text-[#091d2e]">
+                <span className="material-symbols-outlined text-[18px] text-[#4e6074]">explore</span>
+                <span className="text-[13px] font-medium">Week Explorer</span>
               </div>
             </div>
-          ))}
+          </div>
+
+          {/* Card B: Recent Simulation Highlights */}
+          <div className="bg-white rounded-2xl p-6 border border-[#e4e2dc] shadow-[0_2px_8px_rgba(27,28,24,0.03)]">
+            <h3 className="text-[18px] font-bold text-[#1b1c18] mb-4">
+              Recent simulation highlights
+            </h3>
+            <div className="flex flex-col gap-6">
+              <div className="flex flex-col gap-1.5">
+                <span className="inline-flex self-start items-center px-2.5 py-0.5 rounded-full bg-[#cfe2fa] text-[#36485c] text-[11px] font-semibold">
+                  Software Engineer
+                </span>
+                <h4 className="text-[14px] font-bold text-[#1b1c18] mt-1">Fixed a missing UI button</h4>
+                <p className="text-[13px] text-[#43474c] leading-relaxed">
+                  Inspected responsive layout bugs and resolved missing CSS selectors in the simulation engine.
+                </p>
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <span className="inline-flex self-start items-center px-2.5 py-0.5 rounded-full bg-[#f3dae7] text-[#53424c] text-[11px] font-semibold">
+                  Junior Lawyer
+                </span>
+                <h4 className="text-[14px] font-bold text-[#1b1c18] mt-1">Resolved a delivery contract</h4>
+                <p className="text-[13px] text-[#43474c] leading-relaxed">
+                  Identified breach of contract clauses and mediated terms between client and supplier.
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
+      </section>
     </div>
   );
 }
-

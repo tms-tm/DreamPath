@@ -1,366 +1,201 @@
 'use client';
 
-import React, { Suspense, useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
-import {
-  ArrowLeft,
-  ShieldAlert,
-  Code2,
-  CheckCircle2,
-  AlertTriangle,
-  Sparkles,
-  Terminal,
-  Volume2,
-  RotateCcw,
-  Star
-} from 'lucide-react';
-import { SCENARIO_DATABASE, ScenarioNode, ScenarioChoice } from '@/data/scenarios';
 import { useProgressionStore } from '@/stores/useProgressionStore';
-import { speakText, playSound } from '@/utils/sound';
-import confetti from 'canvas-confetti';
 
-function SimulationEngine() {
-  const searchParams = useSearchParams();
-  const careerParam = searchParams.get('career') || 'software-engineer';
+export default function SimulationPage() {
+  const { profile, applyReward, applySkillImpacts } = useProgressionStore();
+  const [selectedDecision, setSelectedDecision] = useState<number | null>(null);
+  const [outcomeRevealed, setOutcomeRevealed] = useState(false);
 
-  const {
-    profile,
-    applySkillImpacts,
-    applyReward,
-    unlockAchievement,
-    setActiveCareer
-  } = useProgressionStore();
+  const decisions = [
+    {
+      id: 1,
+      title: 'Option A: Hotfix Rollback & Immediate Secret Rotation',
+      desc: 'Roll back the production release to the previous commit immediately, rotate the compromised environment credentials, and trigger an automated incident report.',
+      tag: 'Best Practice',
+      tagColor: 'bg-secondary-fixed text-on-secondary-fixed',
+      salaryImpact: '+RM 150/mo',
+      xpImpact: '+120 XP',
+      feedback: 'Excellent response! Reverting the deployment stopped the active token leak within 4 minutes. Your proactive secret rotation protected customer session data from secondary breaches.',
+      isOptimal: true,
+    },
+    {
+      id: 2,
+      title: 'Option B: Live-Patch the Production Console Logging',
+      desc: 'Attempt to modify the live server environment variables directly without rolling back the whole release, keeping the service online during peak user hours.',
+      tag: 'High Risk',
+      tagColor: 'bg-error-container text-on-error-container',
+      salaryImpact: '-RM 50/mo',
+      xpImpact: '+40 XP',
+      feedback: 'Patching production directly left token logs visible for an additional 25 minutes. While uptime was preserved, security auditing flagged the delayed containment.',
+      isOptimal: false,
+    },
+    {
+      id: 3,
+      title: 'Option C: Escalate and Await Senior Staff Return',
+      desc: 'Draft an urgent email notification to the Lead Architect and wait for their confirmation before making any infrastructure alterations.',
+      tag: 'Delayed Action',
+      tagColor: 'bg-surface-container-high text-on-surface-variant',
+      salaryImpact: 'RM 0',
+      xpImpact: '+20 XP',
+      feedback: 'Waiting delayed remediation until after business hours. In high-severity security incidents, frontline engineers must take authorized containment steps.',
+      isOptimal: false,
+    },
+  ];
 
-  const scenario = SCENARIO_DATABASE[careerParam] || SCENARIO_DATABASE['software-engineer'];
+  const handleConfirmDecision = () => {
+    if (selectedDecision === null) return;
+    const choice = decisions.find((d) => d.id === selectedDecision);
+    if (!choice) return;
 
-  const [currentNodeId, setCurrentNodeId] = useState<string>(scenario.startNodeId);
-  const [selectedChoiceId, setSelectedChoiceId] = useState<string | null>(null);
-  const [choiceFeedback, setChoiceFeedback] = useState<ScenarioChoice | null>(null);
-  const [visitedNodes, setVisitedNodes] = useState<string[]>([]);
-  const [earnedStars, setEarnedStars] = useState<number>(0);
-
-  // Sync active career with store
-  useEffect(() => {
-    setActiveCareer(careerParam);
-    setCurrentNodeId(scenario.startNodeId);
-    setSelectedChoiceId(null);
-    setChoiceFeedback(null);
-    setVisitedNodes([]);
-  }, [careerParam, scenario.startNodeId, setActiveCareer]);
-
-  const currentNode: ScenarioNode =
-    scenario.nodes.find((n) => n.nodeId === currentNodeId) || scenario.nodes[0];
-
-  const handleSelectChoice = (choice: ScenarioChoice) => {
-    playSound('click');
-    setSelectedChoiceId(choice.choiceId);
-    setChoiceFeedback(choice);
-
-    if (profile.readAloudEnabled) {
-      speakText(choice.label);
+    setOutcomeRevealed(true);
+    if (choice.isOptimal) {
+      applyReward({ xp: 120, salaryDelta: 150, missionCountDelta: 1 });
+      applySkillImpacts([
+        { skillId: 'problem-solving', xp: 50, competencyDelta: 4 },
+        { skillId: 'communication', xp: 30, competencyDelta: 3 },
+      ]);
+    } else {
+      applyReward({ xp: 40, salaryDelta: 0, missionCountDelta: 1 });
     }
   };
-
-  const handleSubmitDecision = () => {
-    if (!choiceFeedback) return;
-
-    if (choiceFeedback.isCorrect) {
-      playSound('success');
-    }
-
-    // Apply skill impacts
-    if (choiceFeedback.skillImpacts?.length) {
-      applySkillImpacts(choiceFeedback.skillImpacts);
-    }
-
-    // Apply rewards
-    if (choiceFeedback.rewards) {
-      applyReward(choiceFeedback.rewards);
-    }
-
-    // Transition to next node
-    const nextNodeId = choiceFeedback.nextNodeId;
-    setVisitedNodes((prev) => [...prev, currentNodeId]);
-    setCurrentNodeId(nextNodeId);
-    setSelectedChoiceId(null);
-    setChoiceFeedback(null);
-
-    // If next node is terminal, trigger celebration
-    const nextNode = scenario.nodes.find((n) => n.nodeId === nextNodeId);
-    if (nextNode && nextNode.type === 'terminal') {
-      const stars = nextNode.terminalOutcome?.stars ?? 3;
-      setEarnedStars(stars);
-      playSound('levelUp');
-      try {
-        confetti({
-          particleCount: 80,
-          spread: 70,
-          origin: { y: 0.6 },
-        });
-      } catch {
-        // Safe canvas fallback
-      }
-
-      if (careerParam === 'software-engineer') {
-        unlockAchievement('cyber-guardian');
-      } else if (careerParam === 'junior-lawyer') {
-        unlockAchievement('sharp-advocate');
-      } else if (careerParam === 'future-doctor') {
-        unlockAchievement('careful-clinician');
-      }
-
-      if (profile.readAloudEnabled && nextNode.terminalOutcome) {
-        speakText(
-          `${nextNode.terminalOutcome.title}. ${nextNode.terminalOutcome.summary}`
-        );
-      }
-    } else if (profile.readAloudEnabled && nextNode?.prompt) {
-      speakText(nextNode.prompt);
-    }
-  };
-
-  const handleRestart = () => {
-    playSound('click');
-    setCurrentNodeId(scenario.startNodeId);
-    setSelectedChoiceId(null);
-    setChoiceFeedback(null);
-    setVisitedNodes([]);
-    setEarnedStars(0);
-  };
-
-  const isTerminal = currentNode.type === 'terminal';
-  const terminalOutcome = currentNode.terminalOutcome;
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto">
-      {/* Back button and Career Badge */}
-      <div className="flex items-center justify-between">
+    <div className="flex flex-col w-full max-w-5xl mx-auto gap-8 pb-16 animate-fade-in" data-purpose="simulation-container">
+      {/* Section 1: Header & Navigation */}
+      <div className="flex flex-col gap-2">
         <Link
-          href="/paths"
-          className="inline-flex items-center gap-2 text-xs font-bold text-slate-400 hover:text-white transition-colors"
+          href="/modes"
+          className="inline-flex items-center gap-1.5 text-on-surface-variant hover:text-primary text-xs font-semibold transition-colors w-fit"
         >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Back to paths</span>
+          <span className="material-symbols-outlined text-[18px]">arrow_back</span>
+          <span>Back to Practice Hub</span>
         </Link>
-
-        <div className="flex items-center gap-2">
-          {profile.readAloudEnabled && (
-            <button
-              onClick={() => speakText(`${scenario.title}. ${currentNode.prompt}`)}
-              className="px-3 py-1.5 rounded-xl bg-indigo-900/30 border border-indigo-500/30 text-indigo-300 hover:text-white text-xs font-semibold flex items-center gap-1.5"
-            >
-              <Volume2 className="w-3.5 h-3.5" />
-              <span>Read Aloud</span>
-            </button>
-          )}
-
-          <button
-            onClick={handleRestart}
-            className="px-3 py-1.5 rounded-xl bg-[#141830] border border-[#232b57] text-slate-300 hover:text-white text-xs font-semibold flex items-center gap-1.5"
-          >
-            <RotateCcw className="w-3.5 h-3.5" />
-            <span>Reset Mission</span>
-          </button>
+        <div className="flex items-center gap-2 mt-1">
+          <span className="inline-flex items-center px-3 py-1 rounded-full bg-primary-fixed text-on-primary-fixed text-[11px] font-bold uppercase tracking-wider">
+            Branching Narrative · Simulation Mode
+          </span>
+        </div>
+        <div className="flex flex-col gap-1 mt-1">
+          <h1 className="text-2xl md:text-3xl font-extrabold text-on-surface tracking-tight">
+            Software Engineer: Stop the Silent Breach
+          </h1>
+          <p className="text-xs md:text-sm text-on-surface-variant max-w-3xl leading-relaxed">
+            Step into the shoes of a Junior Software Engineer at a Kuala Lumpur fintech startup facing an unexpected database leakage alert.
+          </p>
         </div>
       </div>
 
-      {/* Main Incident Header */}
-      <div>
-        <div className="text-xs font-extrabold uppercase tracking-widest text-indigo-400">
-          {scenario.categoryBadge}
+      {/* Section 2: Case Brief Card */}
+      <div className="bg-surface-container-lowest border border-outline-variant/40 rounded-2xl p-6 sm:p-8 shadow-sm flex flex-col gap-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-error-container text-on-error-container flex items-center justify-center font-bold">
+              <span className="material-symbols-outlined text-[22px]">warning</span>
+            </div>
+            <h2 className="text-base font-bold text-on-surface">Case Brief: Incident #42 — Unusual Outbound Traffic</h2>
+          </div>
+          <span className="inline-flex items-center gap-1.5 text-error text-xs font-bold">
+            <span className="w-2 h-2 rounded-full bg-error animate-pulse"></span>
+            Critical Priority
+          </span>
         </div>
-        <h1 className="text-3xl font-extrabold text-white tracking-tight mt-1">
-          {scenario.title}
-        </h1>
-        <p className="mt-2 text-slate-300 text-sm max-w-3xl leading-relaxed">
-          {scenario.description}
+
+        <p className="text-xs sm:text-sm text-on-surface-variant leading-relaxed">
+          It is 4:15 PM on a Friday. Your cloud monitoring dashboard triggers a high-severity alert: confidential user session tokens are appearing in public client-side browser console logs after the latest production release. Senior engineers are offline on a field client visit. Customer data could be accessed if the misconfigured logging endpoint remains open.
         </p>
+
+        <div className="p-4 rounded-xl bg-surface-container-low border border-outline-variant/30 flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-4 text-xs text-on-surface-variant">
+            <span>Role: <strong className="text-on-surface">Junior Front-End Engineer</strong></span>
+            <span>•</span>
+            <span>Impact: <strong className="text-emerald-600">Simulated Salary &amp; Reliability</strong></span>
+          </div>
+          <span className="text-xs font-bold text-primary">Time Budget: 5 Mins</span>
+        </div>
       </div>
 
-      {/* Terminal Win View */}
-      {isTerminal && terminalOutcome ? (
-        <div className="p-8 sm:p-12 rounded-3xl bg-gradient-to-br from-[#121630] via-[#1a1f42] to-[#121630] border border-emerald-500/40 text-center space-y-6 shadow-2xl relative overflow-hidden">
-          <div className="w-20 h-20 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 mx-auto flex items-center justify-center text-3xl font-black">
-            <CheckCircle2 className="w-10 h-10" />
-          </div>
-
-          <div className="flex justify-center gap-2">
-            {[1, 2, 3].map((starIdx) => (
-              <Star
-                key={starIdx}
-                className={`w-8 h-8 ${
-                  starIdx <= (terminalOutcome.stars || earnedStars)
-                    ? 'text-amber-400 fill-amber-400 animate-pulse'
-                    : 'text-slate-600'
-                }`}
-              />
-            ))}
-          </div>
-
-          <div>
-            <div className="text-xs font-extrabold uppercase tracking-widest text-emerald-400">
-              MISSION COMPLETED • {terminalOutcome.stars} STARS
-            </div>
-            <h2 className="text-2xl sm:text-3xl font-black text-white mt-2">
-              {terminalOutcome.title}
-            </h2>
-            <p className="mt-3 text-slate-300 max-w-xl mx-auto text-sm sm:text-base leading-relaxed">
-              {terminalOutcome.summary}
-            </p>
-          </div>
-
-          {/* Rewards Callout */}
-          <div className="max-w-md mx-auto p-4 rounded-2xl bg-[#090b17]/80 border border-[#212952] flex items-center justify-around">
-            <div>
-              <div className="text-xs font-bold text-slate-400 uppercase">XP REWARD</div>
-              <div className="text-xl font-black text-amber-400">
-                +{terminalOutcome.rewards.xp} XP
-              </div>
-            </div>
-            <div className="w-px h-8 bg-[#212952]" />
-            <div>
-              <div className="text-xs font-bold text-slate-400 uppercase">SALARY BOOST</div>
-              <div className="text-xl font-black text-emerald-400">
-                +${terminalOutcome.rewards.salaryDelta}/mo
-              </div>
-            </div>
-          </div>
-
-          <div className="pt-4 flex flex-wrap gap-4 justify-center">
-            <Link
-              href="/paths"
-              className="px-6 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm shadow-lg shadow-indigo-600/30 transition-all hover:scale-105"
-            >
-              Explore Next Path
-            </Link>
-            <Link
-              href="/leaderboard"
-              className="px-6 py-3 rounded-2xl bg-[#141830] hover:bg-[#1a2040] text-slate-200 font-bold text-sm border border-[#2b3360] transition-all"
-            >
-              View Leaderboard
-            </Link>
-          </div>
+      {/* Section 3: Interactive Decision Engine */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="text-base font-bold text-on-surface">Your Tactical Decision</h3>
+          <span className="text-xs text-on-surface-variant font-medium">Select one strategy to execute:</span>
         </div>
-      ) : (
-        /* Split Screen Mission Console matching Figma screenshot */
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-          {/* Left Column: Code / Evidence & Mentor Dialogue */}
-          <div className="space-y-4">
-            <div className="p-6 rounded-3xl bg-[#0e1224] border border-[#1e233d] relative overflow-hidden">
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-xs font-extrabold uppercase tracking-wide text-indigo-400 flex items-center gap-1.5">
-                  <Terminal className="w-4 h-4 text-indigo-400" />
-                  <span>ACTIVE MISSION</span>
-                </span>
-                <span className="text-xs px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-bold border border-amber-500/30">
-                  +120 XP
-                </span>
-              </div>
 
-              {currentNode.codeSnippet ? (
-                <div className="rounded-2xl bg-[#070a16] border border-[#1b2142] overflow-hidden">
-                  <div className="px-4 py-2 bg-[#0d1226] border-b border-[#1b2142] flex items-center justify-between text-xs text-slate-400 font-mono">
-                    <span>{currentNode.codeSnippet.filename}</span>
-                    <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                      {currentNode.codeSnippet.badge || 'LIVE'}
-                    </span>
-                  </div>
-                  <pre className="p-4 text-xs font-mono text-emerald-300 overflow-x-auto leading-relaxed">
-                    <code>{currentNode.codeSnippet.code}</code>
-                  </pre>
-                </div>
-              ) : null}
-
-              {/* Mentor NPC Box */}
-              {currentNode.npc && (
-                <div className="mt-4 p-4 rounded-2xl bg-[#141833] border border-[#232b57] flex items-start gap-3.5">
-                  <div className="w-10 h-10 rounded-xl bg-indigo-600/30 text-indigo-300 border border-indigo-500/40 font-bold flex items-center justify-center text-sm shrink-0">
-                    {currentNode.npc.avatarChar}
-                  </div>
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-white">{currentNode.npc.name}</span>
-                      <span className="text-[10px] text-indigo-300 px-1.5 py-0.2 rounded bg-indigo-500/20">
-                        {currentNode.npc.role}
-                      </span>
-                    </div>
-                    <p className="mt-1 text-xs text-slate-300 leading-relaxed italic">
-                      "{currentNode.npc.dialogue}"
-                    </p>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Right Column: Decision Choices & Submission */}
-          <div className="p-6 sm:p-8 rounded-3xl bg-[#0e1224] border border-[#1e233d] flex flex-col justify-between space-y-6">
-            <div>
-              <div className="text-xs font-bold uppercase tracking-wider text-indigo-400">
-                DECISION STEP
-              </div>
-              <h2 className="text-xl font-bold text-white tracking-tight mt-1">
-                {currentNode.prompt}
-              </h2>
-
-              <div className="mt-6 space-y-3">
-                {currentNode.choices?.map((choice) => {
-                  const isSelected = selectedChoiceId === choice.choiceId;
-                  return (
-                    <button
-                      key={choice.choiceId}
-                      onClick={() => handleSelectChoice(choice)}
-                      className={`w-full text-left p-4 rounded-2xl border transition-all cursor-pointer flex items-center justify-between group ${
-                        isSelected
-                          ? 'bg-indigo-600/20 border-indigo-500 text-white ring-1 ring-indigo-500'
-                          : 'bg-[#141830] border-[#222952] text-slate-200 hover:bg-[#1a2040] hover:border-indigo-500/40'
-                      }`}
-                    >
-                      <span className="text-sm font-semibold leading-snug">
-                        {choice.label}
-                      </span>
-                      {isSelected && (
-                        <CheckCircle2 className="w-5 h-5 text-indigo-400 shrink-0 ml-3" />
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-
-              {choiceFeedback && (
-                <div className="mt-4 p-3.5 rounded-xl bg-[#12172f] border border-[#1f2854] text-xs text-slate-300 leading-relaxed">
-                  <div className="font-bold text-indigo-300 mb-1">Impact Preview:</div>
-                  {choiceFeedback.explanation}
-                </div>
-              )}
-            </div>
-
-            <div className="pt-4 border-t border-[#1b203c]">
-              <button
-                disabled={!selectedChoiceId}
-                onClick={handleSubmitDecision}
-                className={`w-full py-3.5 rounded-2xl font-bold text-sm transition-all shadow-md ${
-                  selectedChoiceId
-                    ? 'bg-indigo-600 hover:bg-indigo-500 text-white hover:scale-[1.02] active:scale-[0.98]'
-                    : 'bg-[#181d39] text-slate-500 cursor-not-allowed border border-[#242b54]'
+        <div className="grid grid-cols-1 gap-4">
+          {decisions.map((d) => {
+            const isSelected = selectedDecision === d.id;
+            return (
+              <div
+                key={d.id}
+                onClick={() => !outcomeRevealed && setSelectedDecision(d.id)}
+                className={`p-5 rounded-2xl border transition-all cursor-pointer ${
+                  isSelected
+                    ? 'border-primary ring-2 ring-primary/30 bg-surface-container-low'
+                    : 'border-outline-variant/30 bg-surface-container-lowest hover:border-outline'
                 }`}
               >
-                Submit decision
-              </button>
-            </div>
-          </div>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-on-surface">{d.title}</span>
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${d.tagColor}`}>{d.tag}</span>
+                  </div>
+                  <div className="flex items-center gap-3 text-xs font-semibold">
+                    <span className="text-emerald-600">{d.salaryImpact}</span>
+                    <span className="text-primary">{d.xpImpact}</span>
+                  </div>
+                </div>
+                <p className="text-xs text-on-surface-variant leading-relaxed">{d.desc}</p>
+              </div>
+            );
+          })}
         </div>
-      )}
+
+        {/* Action Button & Feedback */}
+        <div className="pt-2 flex flex-col gap-4">
+          {!outcomeRevealed ? (
+            <button
+              onClick={handleConfirmDecision}
+              disabled={selectedDecision === null}
+              className={`w-full py-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-sm ${
+                selectedDecision !== null
+                  ? 'bg-primary text-white hover:bg-primary/90 cursor-pointer'
+                  : 'bg-surface-container-high text-on-surface-variant opacity-50 cursor-not-allowed'
+              }`}
+            >
+              <span>Commit Decision &amp; Run Simulation</span>
+              <span className="material-symbols-outlined text-[16px]">bolt</span>
+            </button>
+          ) : (
+            <div className="p-6 rounded-2xl bg-surface-container-low border border-primary/30 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold uppercase tracking-wider text-primary">Simulation Debrief</span>
+                <span className="text-xs font-bold text-emerald-600">+120 XP Awarded</span>
+              </div>
+              <p className="text-xs text-on-surface leading-relaxed">
+                {decisions.find((d) => d.id === selectedDecision)?.feedback}
+              </p>
+              <div className="pt-3 border-t border-outline-variant/20 flex items-center justify-between">
+                <Link
+                  href="/modes"
+                  className="px-4 py-2 rounded-xl bg-surface-container-lowest border border-outline-variant/30 text-xs font-semibold hover:bg-surface-container transition-colors"
+                >
+                  Return to Hub
+                </Link>
+                <Link
+                  href="/resume-builder"
+                  className="px-4 py-2 rounded-xl bg-primary text-white text-xs font-bold hover:bg-primary/90 transition-all shadow-xs flex items-center gap-1.5"
+                >
+                  <span>Sync Skill to Resume</span>
+                  <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
+                </Link>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
-
-export default function SimulationPage() {
-  return (
-    <Suspense fallback={<div className="p-10 text-center text-slate-400">Loading career simulation engine...</div>}>
-      <SimulationEngine />
-    </Suspense>
-  );
-}
-

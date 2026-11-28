@@ -1,0 +1,189 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - complementary [ref=e4]:
+      - generic [ref=e5]:
+        - link "auto_awesome Dream Path" [ref=e6] [cursor=pointer]:
+          - /url: /
+          - generic [ref=e7]: auto_awesome
+          - generic [ref=e8]:
+            - generic [ref=e9]: Dream
+            - generic [ref=e10]: Path
+        - generic [ref=e12]:
+          - generic [ref=e13]: A
+          - generic [ref=e14]:
+            - paragraph [ref=e15]: Alex Rivera
+            - paragraph [ref=e16]: Aurora Tier · Lv. 4
+        - navigation [ref=e17]:
+          - link "home Home" [ref=e18] [cursor=pointer]:
+            - /url: /
+            - generic [ref=e19]: home
+            - generic [ref=e20]: Home
+          - link "explore Explore Careers" [ref=e21] [cursor=pointer]:
+            - /url: /paths
+            - generic [ref=e22]: explore
+            - generic [ref=e23]: Explore Careers
+          - link "school Practice" [ref=e24] [cursor=pointer]:
+            - /url: /modes
+            - generic [ref=e25]: school
+            - generic [ref=e26]: Practice
+          - link "leaderboard Leaderboard" [ref=e27] [cursor=pointer]:
+            - /url: /leaderboard
+            - generic [ref=e28]: leaderboard
+            - generic [ref=e29]: Leaderboard
+          - link "person Profile" [ref=e30] [cursor=pointer]:
+            - /url: /profile
+            - generic [ref=e31]: person
+            - generic [ref=e32]: Profile
+      - link "settings Settings" [ref=e34] [cursor=pointer]:
+        - /url: /settings
+        - generic [ref=e35]: settings
+        - generic [ref=e36]: Settings
+    - generic [ref=e37]:
+      - banner [ref=e38]:
+        - generic [ref=e39]:
+          - heading "Good evening, Alex Rivera" [level=1] [ref=e40]
+          - generic [ref=e41]:
+            - combobox [ref=e42] [cursor=pointer]:
+              - option "Software Engineer" [selected]
+              - option "Junior Lawyer"
+              - option "Future Doctor"
+              - option "Product Designer"
+              - option "Master Chef"
+            - generic: expand_more
+        - generic [ref=e43]:
+          - button "volume_up" [ref=e44]
+          - link "Notifications" [ref=e46] [cursor=pointer]:
+            - /url: /notifications
+            - generic [ref=e47]: notifications
+          - link "A" [ref=e49] [cursor=pointer]:
+            - /url: /profile
+      - main [ref=e50]:
+        - generic [ref=e51]:
+          - generic [ref=e52]:
+            - generic [ref=e53]:
+              - generic [ref=e54]:
+                - generic [ref=e55]: 1,280 XP
+                - generic [ref=e61]: Lv. 4
+              - generic [ref=e62]: to Lv. 5
+            - generic [ref=e67]:
+              - generic [ref=e72]:
+                - generic [ref=e73]: RM 2,160 /mo
+                - paragraph [ref=e74]: Estimated Entry
+              - generic [ref=e75]: +RM 120
+            - generic [ref=e76]:
+              - generic [ref=e81]:
+                - text: 7-Day Streak
+                - paragraph [ref=e82]: Keep learning daily
+              - generic [ref=e83]: Active
+          - generic [ref=e87]:
+            - generic [ref=e88]: Job Galaxy
+            - heading "Explore Your Future Job" [level=2] [ref=e91]
+            - paragraph [ref=e92]: View detailed career insights, required candidate skills, and your real-time job market match.
+            - generic [ref=e93]:
+              - link "Continue your journey" [ref=e94] [cursor=pointer]:
+                - /url: /simulation
+              - link "Try other careers >" [ref=e98] [cursor=pointer]:
+                - /url: /paths
+                - generic [ref=e99]: Try other careers
+                - generic [ref=e100]: ">"
+          - generic [ref=e101]:
+            - generic [ref=e102]:
+              - generic [ref=e103]:
+                - generic [ref=e104]:
+                  - generic [ref=e105]:
+                    - generic [ref=e106]: DAILY QUEST
+                    - generic [ref=e109]: "#42"
+                  - generic [ref=e110]: Easy
+                - generic [ref=e111]:
+                  - heading "Fix the Missing Button" [level=3] [ref=e112]
+                  - paragraph [ref=e113]: Inspect a responsive UI layout bug in the frontend simulation engine and restore the primary CTA button state.
+                - generic [ref=e114]:
+                  - generic [ref=e115]: +80 XP · ~10 min
+                  - generic [ref=e119]: Front-End Sandbox
+                - generic [ref=e123]:
+                  - generic [ref=e124]: Daily Progress
+                  - generic [ref=e125]: 1/1 Quests Done
+              - generic [ref=e128]: Mission Completed (+80 XP)
+            - generic [ref=e133]:
+              - generic [ref=e134]:
+                - generic [ref=e135]:
+                  - heading "Your Career Roadmap" [level=3] [ref=e140]
+                  - generic [ref=e141]: Software Engineer
+                - generic [ref=e143]:
+                  - generic [ref=e144]: Overall Completion
+                  - generic [ref=e145]: 35%
+                - generic [ref=e148]:
+                  - generic [ref=e153]:
+                    - generic [ref=e154]: Current Milestone
+                    - paragraph [ref=e155]: Building Programming Foundations
+                  - generic [ref=e161]:
+                    - generic [ref=e162]: Next Milestone
+                    - paragraph [ref=e163]: Master Front-End Development
+              - link "View Full Roadmap" [ref=e165] [cursor=pointer]:
+                - /url: /paths
+          - generic [ref=e169]:
+            - generic [ref=e170]:
+              - generic [ref=e171]:
+                - heading "Your Skill Progress" [level=3] [ref=e176]
+                - paragraph [ref=e177]: Track the skills you're developing for your dream career.
+                - generic [ref=e178]:
+                  - generic [ref=e180]:
+                    - generic [ref=e181]: JavaScript
+                    - generic [ref=e182]: 75%
+                  - generic [ref=e186]:
+                    - generic [ref=e187]: React
+                    - generic [ref=e188]: 40%
+                  - generic [ref=e192]:
+                    - generic [ref=e193]: System Design
+                    - generic [ref=e194]: 15%
+              - link "View All Skills >" [ref=e198] [cursor=pointer]:
+                - /url: /profile
+                - generic [ref=e199]: View All Skills
+                - generic [ref=e200]: ">"
+            - generic [ref=e201]:
+              - generic [ref=e202]:
+                - heading "Recommended for You" [level=3] [ref=e207]
+                - paragraph [ref=e208]: Curated milestones to accelerate your career growth.
+                - generic [ref=e209]:
+                  - generic [ref=e210]:
+                    - generic [ref=e211]:
+                      - generic [ref=e212]:
+                        - heading "Learn React Fundamentals" [level=4] [ref=e213]
+                        - generic [ref=e214]: Learning · 20m
+                      - paragraph [ref=e215]: Strengthen your front-end development skills
+                    - link "Start" [ref=e216] [cursor=pointer]:
+                      - /url: /modes
+                  - generic [ref=e217]:
+                    - generic [ref=e218]:
+                      - generic [ref=e219]:
+                        - heading "Practice Data Structures" [level=4] [ref=e220]
+                        - generic [ref=e221]: Practice · +100 XP
+                      - paragraph [ref=e222]: Improve your problem-solving and coding skills
+                    - link "Practice" [ref=e223] [cursor=pointer]:
+                      - /url: /modes
+                  - generic [ref=e224]:
+                    - generic [ref=e225]:
+                      - generic [ref=e226]:
+                        - heading "Explore Backend Development" [level=4] [ref=e227]
+                        - generic [ref=e228]: Career Skills
+                      - paragraph [ref=e229]: Discover essential backend technologies
+                    - link "Explore" [ref=e230] [cursor=pointer]:
+                      - /url: /paths
+              - link "View All Recommendations >" [ref=e232] [cursor=pointer]:
+                - /url: /modes
+                - generic [ref=e233]: View All Recommendations
+                - generic [ref=e234]: ">"
+    - generic "Drag Dreamy or click to chat!" [ref=e235]:
+      - generic: Ask Dreamy
+      - generic [ref=e236]:
+        - generic "Click Dreamy to chat!"
+  - generic [ref=e241] [cursor=pointer]:
+    - button "Open Next.js Dev Tools" [ref=e242]
+    - generic [ref=e246]:
+      - button "Open issues overlay" [ref=e247]:
+        - generic [ref=e248]:
+          - generic [aria-hidden] [ref=e249]: "0"
+          - generic [ref=e250]: "1"
+        - generic [ref=e251]: Insight
+      - button "Collapse issues badge" [ref=e252]
+  - alert [ref=e255]

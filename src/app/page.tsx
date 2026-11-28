@@ -2,26 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import {
-  Sparkles,
-  ArrowRight,
-  TrendingUp,
-  Clock,
-  Target,
-  CheckCircle2,
-  Code2,
-  Scale,
-  Stethoscope,
-  Palette,
-  UtensilsCrossed,
-  Shield,
-  Award,
-  Zap,
-  Volume2
-} from 'lucide-react';
 import { useProgressionStore } from '@/stores/useProgressionStore';
-import { CAREER_PATHS, EDUCATION_TIERS } from '@/types/career';
-import { speakText, playSound } from '@/utils/sound';
 
 export default function HomePage() {
   const {
@@ -30,391 +11,537 @@ export default function HomePage() {
     simulatedSalary,
     completedQuests,
     completeQuest,
-    skills,
-    setActiveCareer
+    skills
   } = useProgressionStore();
 
   const [questStarted, setQuestStarted] = useState(false);
-  const tier = EDUCATION_TIERS[profile.educationTier] || EDUCATION_TIERS.aurora;
-
-  const activeCareer =
-    CAREER_PATHS.find((c) => c.id === profile.activeCareerId) || CAREER_PATHS[0];
+  const isQuestDone = completedQuests.includes('quest-btn-1');
 
   const handleStartDailyQuest = () => {
-    playSound('click');
     setQuestStarted(true);
-    if (profile.readAloudEnabled) {
-      speakText(
-        "Mission: Fix the missing button. A small part of the school website disappeared. Use your logic to bring it back!"
-      );
-    }
   };
 
   const handleFinishQuest = () => {
-    playSound('success');
     completeQuest('quest-btn-1', 80);
     setQuestStarted(false);
   };
 
-  const getCareerIcon = (iconName: string) => {
-    switch (iconName) {
-      case 'Code2':
-        return Code2;
-      case 'Scale':
-        return Scale;
-      case 'Stethoscope':
-        return Stethoscope;
-      case 'Palette':
-        return Palette;
-      case 'UtensilsCrossed':
-        return UtensilsCrossed;
-      default:
-        return Sparkles;
-    }
-  };
-
-  const isQuestDone = completedQuests.includes('quest-btn-1');
-
   return (
-    <div className="space-y-8 animate-fade-in">
-      {/* Hero Banner Section matching Figma styling */}
-      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#171a33] via-[#1b1c43] to-[#251b47] border border-[#2b2f56] p-6 sm:p-10 shadow-2xl">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-10 -left-10 w-80 h-80 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+    <div className="space-y-7 max-w-7xl mx-auto w-full animate-fade-in" data-purpose="dashboard-main-content">
+      {/* BEGIN: StatSummaryRow */}
+      <section className="grid grid-cols-1 md:grid-cols-3 gap-5" data-purpose="stat-metrics">
+        {/* Metric Card 1: XP Progress */}
+        <div className="bg-white border border-[#EAE5DE] rounded-2xl p-5 shadow-soft hover:shadow-card transition-shadow">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-[#FEF3C7] text-[#D97706] flex items-center justify-center">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
+                  <circle cx="12" cy="8" r="6" />
+                  <path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </div>
+              <span className="text-xl font-bold text-[#1E232A]">1,280 XP</span>
+            </div>
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#EFF6FF] text-[#1D4ED8] border border-[#DBEAFE]">
+              Lv. 4
+            </span>
+          </div>
+          {/* Progress Bar to Lv 5 */}
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-end text-[11px] font-medium text-charcoal-muted">
+              <span>to Lv. 5</span>
+            </div>
+            <div className="w-full h-2 rounded-full bg-[#EFE9DE] overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-[#60A5FA] to-[#0E86D4] rounded-full transition-all duration-500"
+                style={{ width: '65%' }}
+              />
+            </div>
+          </div>
+        </div>
 
-        <div className="relative z-10 max-w-2xl">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 text-xs font-bold tracking-wider uppercase border border-indigo-500/30 mb-4">
-            <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-            <span>YOUR NEXT ADVENTURE</span>
+        {/* Metric Card 2: Estimated Salary */}
+        <div className="bg-white border border-[#EAE5DE] rounded-2xl p-5 shadow-soft hover:shadow-card transition-shadow flex items-center justify-between">
+          <div className="flex items-center gap-3.5">
+            <div className="w-9 h-9 rounded-xl bg-[#D1FAE5] text-[#059669] flex items-center justify-center">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
+                <rect height="14" rx="2" width="20" x="2" y="5" />
+                <line x1="2" x2="22" y1="10" y2="10" />
+              </svg>
+            </div>
+            <div>
+              <div className="text-xl font-bold text-[#1E232A]">
+                RM 2,160 <span className="text-xs font-normal text-charcoal-muted">/mo</span>
+              </div>
+              <p className="text-xs font-medium text-charcoal-muted mt-0.5">Estimated Entry</p>
+            </div>
+          </div>
+          {/* Badge pill */}
+          <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-[#ECFDF5] text-[#047857] border border-[#A7F3D0]">
+            +RM 120
+          </span>
+        </div>
+
+        {/* Metric Card 3: Streak */}
+        <div className="bg-white border border-[#EAE5DE] rounded-2xl p-5 shadow-soft hover:shadow-card transition-shadow flex items-center justify-between">
+          <div className="flex items-center gap-3.5">
+            <div className="w-9 h-9 rounded-xl bg-[#FFEDD5] text-[#EA580C] flex items-center justify-center">
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12.87 2.08a.75.75 0 0 0-.82.16C10.74 3.5 6.5 8.1 6.5 13.25a6.5 6.5 0 1 0 13 0c0-3.3-1.63-6.66-3.8-9.06a.75.75 0 0 0-1.12.08 7.9 7.9 0 0 1-1.71 1.81z" />
+              </svg>
+            </div>
+            <div>
+              <span className="text-xl font-bold text-[#1E232A]">7-Day Streak</span>
+              <p className="text-xs font-medium text-charcoal-muted mt-0.5">Keep learning daily</p>
+            </div>
+          </div>
+          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-[#FEF3C7] text-[#B45309] border border-[#FDE68A]">
+            <svg className="w-3 h-3 fill-current" viewBox="0 0 24 24">
+              <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+            </svg>
+            Active
+          </span>
+        </div>
+      </section>
+      {/* END: StatSummaryRow */}
+
+      {/* BEGIN: HeroBanner */}
+      <section
+        className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#FDE8E1] via-[#FCEAE3] to-[#F1F5FD] border border-[#EBE1D8] p-8 md:p-10 shadow-soft"
+        data-purpose="hero-banner"
+      >
+        <div className="relative z-10 max-w-xl">
+          {/* Galaxy Tag */}
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/90 backdrop-blur-sm text-xs font-bold text-[#C2410C] tracking-wide uppercase border border-[#FCD9C8] mb-4">
+            <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 2L14.4 9.6L22 12L14.4 14.4L12 22L9.6 14.4L2 12L9.6 9.6L12 2Z" />
+            </svg>
+            Job Galaxy
           </div>
 
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight">
-            Every dream starts with a{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-pink-400 to-indigo-300">
-              small step.
-            </span>
+          {/* Title & Subtitle */}
+          <h2 className="text-2xl md:text-3xl font-extrabold text-[#1E232A] tracking-tight">
+            Explore Your Future Job
           </h2>
-
-          <p className="mt-3 text-slate-300 text-base sm:text-lg leading-relaxed">
-            Explore real-world careers through playful missions made just for your{' '}
-            <span className="font-semibold text-white">{tier.name}</span> level. Earn simulated salary, build verifiable skills, and master your path.
+          <p className="mt-2 text-sm md:text-base text-[#57534E] leading-relaxed">
+            View detailed career insights, required candidate skills, and your real-time job market match.
           </p>
 
-          <div className="mt-6 flex flex-wrap gap-4 items-center">
+          {/* Action Buttons */}
+          <div className="mt-6 flex flex-wrap items-center gap-4">
             <Link
-              href={`/simulation?career=${activeCareer.id}`}
-              onClick={() => playSound('click')}
-              className="inline-flex items-center gap-2.5 px-6 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold shadow-lg shadow-indigo-600/30 transition-all hover:scale-105 active:scale-95"
+              href="/simulation"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#0E86D4] hover:bg-[#0269B3] text-white text-sm font-semibold shadow-md shadow-sky-500/20 transition-all hover:scale-105 active:scale-95"
             >
               <span>Continue your journey</span>
-              <ArrowRight className="w-4 h-4" />
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
+                <path d="M14 5l7 7m0 0l-7 7m7-7H3" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
             </Link>
-
             <Link
               href="/paths"
-              className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-[#141830] hover:bg-[#1a1f3d] text-slate-200 font-semibold border border-[#2b3360] transition-all"
+              className="text-sm font-semibold text-[#1E232A] hover:text-[#0E86D4] inline-flex items-center gap-1 transition-colors"
             >
-              <span>Explore all paths</span>
+              <span>Try other careers</span>
+              <span className="text-xs font-bold">&gt;</span>
             </Link>
-
-            {profile.readAloudEnabled && (
-              <button
-                onClick={() =>
-                  speakText(
-                    "Welcome to your Dream Dashboard. Explore real world careers through playful missions made just for your level!"
-                  )
-                }
-                className="p-3 rounded-2xl bg-indigo-900/30 border border-indigo-500/30 text-indigo-300 hover:text-white"
-                title="Read aloud banner"
-              >
-                <Volume2 className="w-4 h-4" />
-              </button>
-            )}
           </div>
         </div>
-      </section>
 
-      {/* 3 Metric Summary Cards matching Figma layout */}
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
-        {/* Total XP */}
-        <div className="p-6 rounded-2xl bg-custom-card border border-[#1e233d] relative overflow-hidden group hover:border-indigo-500/50 transition-all">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">TOTAL XP</span>
-            <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 font-semibold border border-emerald-500/30">
-              +120 this week
-            </span>
-          </div>
-          <div className="mt-3 text-3xl font-black text-white">{totalXp.toLocaleString()}</div>
-          <div className="mt-2 text-xs text-slate-400 flex items-center gap-1.5">
-            <TrendingUp className="w-3.5 h-3.5 text-indigo-400" />
-            <span>Next milestone at 1,500 XP</span>
-          </div>
-          <div className="mt-3 w-full bg-[#1b1f3b] h-2 rounded-full overflow-hidden">
-            <div
-              className="bg-gradient-to-r from-indigo-500 to-amber-400 h-full rounded-full transition-all duration-500"
-              style={{ width: `${Math.min(100, (totalXp / 1500) * 100)}%` }}
+        {/* Right Side Planet Illustration (Inline SVG from Stitch prototype) */}
+        <div className="absolute right-4 md:right-10 top-1/2 -translate-y-1/2 w-64 md:w-80 h-64 md:h-80 pointer-events-none hidden sm:flex items-center justify-center animate-float">
+          <svg className="w-full h-full drop-shadow-lg" viewBox="0 0 280 280">
+            <defs>
+              <linearGradient id="planetGrad" x1="20%" x2="80%" y1="20%" y2="80%">
+                <stop offset="0%" stopColor="#FCA5A5" />
+                <stop offset="50%" stopColor="#C084FC" />
+                <stop offset="100%" stopColor="#93C5FD" />
+              </linearGradient>
+              <linearGradient id="ringGrad" x1="0%" x2="100%" y1="0%" y2="100%">
+                <stop offset="0%" stopColor="#F87171" stopOpacity="0.9" />
+                <stop offset="50%" stopColor="#FBBF24" stopOpacity="0.7" />
+                <stop offset="100%" stopColor="#6EE7B7" stopOpacity="0.9" />
+              </linearGradient>
+            </defs>
+            <circle cx="140" cy="140" fill="#FFF6F1" filter="blur(16px)" opacity="0.6" r="85" />
+            <ellipse
+              cx="140"
+              cy="140"
+              fill="none"
+              rx="125"
+              ry="38"
+              stroke="url(#ringGrad)"
+              strokeDasharray="190 600"
+              strokeLinecap="round"
+              strokeWidth="11"
+              transform="rotate(-26 140 140)"
             />
-          </div>
-        </div>
-
-        {/* Missions Done */}
-        <div className="p-6 rounded-2xl bg-custom-card border border-[#1e233d] relative overflow-hidden group hover:border-indigo-500/50 transition-all">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">MISSIONS DONE</span>
-            <span className="text-xs px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-400 font-semibold border border-indigo-500/30">
-              Top 18%
-            </span>
-          </div>
-          <div className="mt-3 text-3xl font-black text-white">{profile.missionsCompleted}</div>
-          <div className="mt-2 text-xs text-slate-400 flex items-center gap-1.5">
-            <Award className="w-3.5 h-3.5 text-amber-400" />
-            <span>Level 4 Pathfinder Rank</span>
-          </div>
-          <div className="mt-3 flex items-center gap-1">
-            {[1, 2, 3, 4, 5].map((i) => (
-              <div
-                key={i}
-                className={`h-2 flex-1 rounded-full ${
-                  i <= 4 ? 'bg-amber-400' : 'bg-[#1b1f3b]'
-                }`}
-              />
-            ))}
-          </div>
-        </div>
-
-        {/* Learning Time */}
-        <div className="p-6 rounded-2xl bg-custom-card border border-[#1e233d] relative overflow-hidden group hover:border-indigo-500/50 transition-all">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">LEARNING TIME</span>
-            <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 font-semibold border border-emerald-500/30">
-              Healthy pace
-            </span>
-          </div>
-          <div className="mt-3 text-3xl font-black text-white">4h 32m</div>
-          <div className="mt-2 text-xs text-slate-400 flex items-center gap-1.5">
-            <Clock className="w-3.5 h-3.5 text-indigo-400" />
-            <span>{profile.screenTimeUsedMinutes} of {profile.screenTimeMaxMinutes} mins today</span>
-          </div>
-          <div className="mt-3 w-full bg-[#1b1f3b] h-2 rounded-full overflow-hidden">
-            <div
-              className="bg-emerald-400 h-full rounded-full transition-all duration-500"
-              style={{
-                width: `${(profile.screenTimeUsedMinutes / profile.screenTimeMaxMinutes) * 100}%`,
-              }}
+            <circle cx="140" cy="140" fill="url(#planetGrad)" r="56" />
+            <ellipse
+              cx="140"
+              cy="140"
+              fill="none"
+              rx="125"
+              ry="38"
+              stroke="url(#ringGrad)"
+              strokeDashoffset="-200"
+              strokeLinecap="round"
+              strokeWidth="11"
+              transform="rotate(-26 140 140)"
             />
-          </div>
+            <path d="M70 70 L73 78 L81 81 L73 84 L70 92 L67 84 L59 81 L67 78 Z" fill="#FBBF24" opacity="0.8" />
+            <path d="M220 50 L222 55 L227 57 L222 59 L220 64 L218 59 L213 57 L218 55 Z" fill="#60A5FA" opacity="0.9" />
+            <path d="M225 200 L226.5 204 L230.5 205.5 L226.5 207 L225 211 L223.5 207 L219.5 205.5 L223.5 204 Z" fill="#F472B6" opacity="0.85" />
+          </svg>
         </div>
       </section>
+      {/* END: HeroBanner */}
 
-      {/* Choose your journey / Explore dream paths */}
-      <section className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="text-xs font-bold uppercase tracking-wider text-indigo-400">CHOOSE YOUR JOURNEY</div>
-            <h3 className="text-2xl font-bold text-white tracking-tight">Explore dream paths</h3>
-          </div>
-          <Link
-            href="/paths"
-            className="text-sm font-semibold text-indigo-400 hover:text-indigo-300 flex items-center gap-1"
-          >
-            <span>View all paths</span>
-            <ArrowRight className="w-4 h-4" />
-          </Link>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {CAREER_PATHS.slice(0, 3).map((career) => {
-            const Icon = getCareerIcon(career.icon);
-            const isCurrent = profile.activeCareerId === career.id;
-            return (
-              <div
-                key={career.id}
-                onClick={() => setActiveCareer(career.id)}
-                className={`p-6 rounded-2xl bg-custom-card border transition-all cursor-pointer relative group flex flex-col justify-between ${
-                  isCurrent
-                    ? 'border-indigo-500 shadow-lg shadow-indigo-950/40 ring-1 ring-indigo-500/40'
-                    : 'border-[#1e233d] hover:border-[#2d355c]'
-                }`}
-              >
-                <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <span className="text-xs font-semibold px-2.5 py-1 rounded-lg bg-[#181d39] text-indigo-300 border border-[#2b3360]">
-                      {career.stageInfo}
-                    </span>
-                    <div className="w-9 h-9 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 group-hover:scale-110 transition-transform">
-                      <Icon className="w-5 h-5" />
-                    </div>
-                  </div>
-
-                  <h4 className="text-lg font-bold text-white group-hover:text-indigo-300 transition-colors">
-                    {career.title}
-                  </h4>
-                  <p className="mt-1 text-sm text-slate-400 line-clamp-2">{career.subtitle}</p>
-
-                  <div className="mt-5 space-y-1.5">
-                    <div className="flex items-center justify-between text-xs text-slate-400">
-                      <span>Path progress</span>
-                      <span className="font-bold text-white">{career.progressPercent}%</span>
-                    </div>
-                    <div className="w-full bg-[#1b1f3b] h-2 rounded-full overflow-hidden">
-                      <div
-                        className="bg-indigo-500 h-full rounded-full transition-all"
-                        style={{ width: `${career.progressPercent}%` }}
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mt-6 pt-4 border-t border-[#1b1f38] flex items-center justify-between">
-                  <div className="text-xs text-slate-400">
-                    Base: <span className="font-bold text-emerald-400">${career.baseSalary}/mo</span>
-                  </div>
-                  <Link
-                    href={`/simulation?career=${career.id}`}
-                    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                      isCurrent
-                        ? 'bg-indigo-600 hover:bg-indigo-500 text-white'
-                        : 'bg-[#181d39] hover:bg-[#20264b] text-indigo-300 border border-[#2b3360]'
-                    }`}
-                  >
-                    {isCurrent ? 'Continue mission' : 'Explore path'}
-                  </Link>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* Bottom 2-Column Split: Daily Quest & Parent Space info */}
-      <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Today's Daily Quest Card (2 Cols) */}
-        <div className="lg:col-span-2 p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-[#121630] to-[#151a3a] border border-[#222955] relative overflow-hidden flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <span className="px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs font-extrabold uppercase">
-                MISSION 08
-              </span>
+      {/* BEGIN: MiddleTwoColumnGrid */}
+      <section className="grid grid-cols-1 lg:grid-cols-2 gap-6" data-purpose="quest-and-roadmap">
+        {/* Left Card: Daily Quest */}
+        <div className="bg-white border border-[#EAE5DE] rounded-2xl p-6 shadow-soft flex flex-col justify-between">
+          <div className="space-y-4">
+            {/* Header Badges */}
+            <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className="text-xs px-2.5 py-0.5 rounded-full bg-[#1f2652] text-slate-300">
-                  10 min
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#FEF3C7] text-[#92400E] border border-[#FDE68A]">
+                  <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                    <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+                  </svg>
+                  DAILY QUEST
                 </span>
-                <span className="text-xs px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-bold">
-                  +80 XP
-                </span>
-                <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-bold">
-                  Beginner
-                </span>
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#EFF6FF] text-[#1E40AF]">#42</span>
               </div>
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#ECFDF5] text-[#065F46] border border-[#A7F3D0]">
+                Easy
+              </span>
             </div>
 
-            <div className="text-xs uppercase tracking-widest font-bold text-indigo-400 mb-1">
-              TODAY'S DAILY QUEST
+            {/* Quest Title & Description */}
+            <div>
+              <h3 className="text-lg font-bold text-[#1E232A]">Fix the Missing Button</h3>
+              <p className="mt-1 text-xs md:text-sm text-charcoal-muted leading-relaxed">
+                Inspect a responsive UI layout bug in the frontend simulation engine and restore the primary CTA button state.
+              </p>
             </div>
-            <h3 className="text-2xl font-black text-white">Fix the missing button</h3>
-            <p className="mt-2 text-slate-300 text-sm sm:text-base leading-relaxed">
-              A small part of the school website disappeared. Use your logic and HTML skills to bring it back and verify accessibility labels.
-            </p>
+
+            {/* Quest Meta Chips */}
+            <div className="flex flex-wrap items-center gap-2.5 pt-1">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-[#FAF8F5] border border-[#EBE5DC] text-xs font-medium text-[#4A5568]">
+                <svg className="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="9" />
+                  <path d="M12 7v5l3 2" strokeLinecap="round" />
+                </svg>
+                +80 XP · ~10 min
+              </span>
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-[#FAF8F5] border border-[#EBE5DC] text-xs font-medium text-[#4A5568]">
+                <svg className="w-3.5 h-3.5 text-blue-500" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
+                  <path d="M8 9l-4 3 4 3m8-6l4 3-4 3" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                Front-End Sandbox
+              </span>
+            </div>
+
+            {/* Daily Progress Counter */}
+            <div className="pt-2">
+              <div className="flex items-center justify-between text-xs font-semibold text-[#1E232A] mb-1.5">
+                <span>Daily Progress</span>
+                <span className="text-charcoal-muted font-medium">
+                  {isQuestDone ? '1/1 Quests Done' : '1/3 Quests'}
+                </span>
+              </div>
+              <div className="w-full h-2 rounded-full bg-[#EFE9DE] overflow-hidden">
+                <div
+                  className="h-full bg-[#0E86D4] rounded-full transition-all duration-500"
+                  style={{ width: isQuestDone ? '100%' : '33.3%' }}
+                />
+              </div>
+            </div>
 
             {questStarted && (
-              <div className="mt-5 p-4 rounded-2xl bg-[#0b0e22] border border-indigo-500/40 space-y-3">
-                <div className="text-xs font-bold text-indigo-400 uppercase tracking-wide">
-                  Interactive Quest Console
+              <div className="p-4 rounded-xl bg-[#FAF8F5] border border-[#EAE5DE] space-y-3">
+                <div className="text-xs font-bold text-[#0E86D4] uppercase">Interactive Front-End Sandbox</div>
+                <div className="p-3 bg-[#1E232A] text-emerald-400 font-mono text-xs rounded-lg">
+                  &lt;button type="submit" aria-label="Join Study Club"&gt;Join Study Club&lt;/button&gt;
                 </div>
-                <div className="p-3 bg-[#060814] rounded-xl font-mono text-xs text-emerald-300 border border-[#1e254d]">
-                  &lt;button type="submit" aria-label="Enroll Course"&gt;Join Study Club&lt;/button&gt;
-                </div>
-                <p className="text-xs text-slate-300">
-                  Click the button below to assemble the HTML element and inject it into the school portal:
-                </p>
                 <button
                   onClick={handleFinishQuest}
-                  className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md transition-all flex items-center gap-2"
+                  className="w-full py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm transition-all"
                 >
-                  <CheckCircle2 className="w-4 h-4" />
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                    <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
                   <span>Deploy & Claim +80 XP</span>
                 </button>
               </div>
             )}
           </div>
 
-          <div className="mt-6 pt-4 border-t border-[#1e254e] flex items-center justify-between">
-            <div className="text-xs text-slate-400 flex items-center gap-2">
-              <Zap className="w-4 h-4 text-amber-400" />
-              <span>Skill Focus: Problem Solving & HTML</span>
-            </div>
-
+          {/* Bottom Action Button */}
+          <div className="mt-6">
             {isQuestDone ? (
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-500/20 text-emerald-300 text-xs font-bold border border-emerald-500/30">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                <span>Mission Completed</span>
+              <div className="w-full py-2.5 rounded-xl bg-[#ECFDF5] border border-[#A7F3D0] text-[#065F46] text-sm font-bold flex items-center justify-center gap-2">
+                <svg className="w-4 h-4 text-[#059669]" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                  <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                <span>Mission Completed (+80 XP)</span>
               </div>
             ) : !questStarted ? (
               <button
                 onClick={handleStartDailyQuest}
-                className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-md transition-all hover:scale-105 active:scale-95"
+                className="w-full py-2.5 rounded-xl bg-[#0E86D4] hover:bg-[#0269B3] text-white text-sm font-bold flex items-center justify-center gap-2 shadow-sm transition-colors cursor-pointer"
               >
-                Start mission
+                <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                  <path d="M8 5v14l11-7z" />
+                </svg>
+                <span>Start Quest</span>
               </button>
             ) : null}
           </div>
         </div>
 
-        {/* Parent Space Widget matching Figma */}
-        <div className="p-6 sm:p-8 rounded-3xl bg-[#0e1224] border border-[#1e233d] flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-xs font-extrabold uppercase tracking-wider text-indigo-400">
-                PARENT SPACE
+        {/* Right Card: Career Roadmap */}
+        <div className="bg-white border border-[#EAE5DE] rounded-2xl p-6 shadow-soft flex flex-col justify-between">
+          <div className="space-y-5">
+            {/* Header */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-7 h-7 rounded-lg bg-[#EFF6FF] text-[#0E86D4] flex items-center justify-center">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
+                    <path d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </div>
+                <h3 className="text-base font-bold text-[#1E232A]">Your Career Roadmap</h3>
+              </div>
+              <span className="px-3 py-1 rounded-full text-xs font-semibold bg-[#F0F7FF] text-[#0269B3] border border-[#BAE0FD]">
+                Software Engineer
               </span>
-              <Shield className="w-4 h-4 text-emerald-400" />
             </div>
 
-            <h4 className="text-lg font-bold text-white">Healthy progress</h4>
-            <p className="mt-1 text-xs text-slate-400">
-              Clear learning supervision for {profile.name} without intrusive monitoring.
-            </p>
-
-            <div className="mt-5 p-4 rounded-2xl bg-[#141933] border border-[#212952] flex items-center gap-4">
-              <div className="w-14 h-14 rounded-2xl bg-indigo-600/20 border border-indigo-500/30 flex flex-col items-center justify-center text-center">
-                <span className="text-lg font-black text-indigo-300 leading-none">
-                  {profile.screenTimeUsedMinutes}
-                </span>
-                <span className="text-[10px] text-slate-400 font-medium">min</span>
+            {/* Overall Completion Bar */}
+            <div className="bg-[#FAF8F5] border border-[#EBE5DC] rounded-xl p-3.5">
+              <div className="flex items-center justify-between text-xs font-semibold mb-2">
+                <span className="text-[#4A5568]">Overall Completion</span>
+                <span className="text-[#0E86D4] font-bold text-sm">35%</span>
               </div>
-              <div>
-                <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wide">
-                  TODAY'S SCREEN TIME
-                </div>
-                <div className="text-sm font-bold text-white">
-                  {profile.screenTimeUsedMinutes} of {profile.screenTimeMaxMinutes} minutes
-                </div>
-                <div className="text-xs text-emerald-400">
-                  {profile.screenTimeMaxMinutes - profile.screenTimeUsedMinutes} minutes remaining
-                </div>
+              <div className="w-full h-2 rounded-full bg-[#E5DFD5] overflow-hidden">
+                <div className="h-full bg-gradient-to-r from-[#60A5FA] to-[#0E86D4] rounded-full" style={{ width: '35%' }} />
               </div>
             </div>
 
-            <div className="mt-4 p-3.5 rounded-xl bg-[#12162c] border border-[#1e2342]">
-              <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wide">
-                TOP INTEREST THIS WEEK
+            {/* Milestones List */}
+            <div className="space-y-3.5 pt-1">
+              {/* Completed/Current Milestone */}
+              <div className="flex items-start gap-3">
+                <div className="w-6 h-6 rounded-full bg-[#ECFDF5] border border-[#A7F3D0] flex items-center justify-center text-[#059669] flex-shrink-0 mt-0.5">
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                    <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </div>
+                <div>
+                  <span className="text-[11px] font-bold text-charcoal-muted uppercase tracking-wider block">
+                    Current Milestone
+                  </span>
+                  <p className="text-xs md:text-sm font-semibold text-[#1E232A]">
+                    Building Programming Foundations
+                  </p>
+                </div>
               </div>
-              <div className="text-sm font-bold text-white mt-1">
-                Technology & problem solving
+
+              {/* Next Milestone */}
+              <div className="flex items-start gap-3">
+                <div className="w-6 h-6 rounded-full bg-[#EFF6FF] border border-[#BFDBFE] flex items-center justify-center text-[#2563EB] flex-shrink-0 mt-0.5">
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="9" />
+                    <polyline points="12 6 12 12 16 14" />
+                  </svg>
+                </div>
+                <div>
+                  <span className="text-[11px] font-bold text-charcoal-muted uppercase tracking-wider block">
+                    Next Milestone
+                  </span>
+                  <p className="text-xs md:text-sm font-semibold text-[#1E232A]">
+                    Master Front-End Development
+                  </p>
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="mt-6 pt-4 border-t border-[#1b203c]">
+          {/* Bottom Action Button */}
+          <div className="mt-6">
             <Link
-              href="/parent"
-              className="w-full block py-2.5 text-center rounded-xl bg-[#161c3a] hover:bg-[#1f2752] text-indigo-300 font-bold text-xs border border-[#2a3466] transition-all"
+              href="/paths"
+              className="w-full py-2.5 rounded-xl border border-[#CBD5E1] bg-white hover:bg-gray-50 text-[#1E232A] text-sm font-semibold flex items-center justify-center gap-2 transition-colors"
             >
-              View supervision dashboard
+              <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              <span>View Full Roadmap</span>
             </Link>
           </div>
         </div>
       </section>
+      {/* END: MiddleTwoColumnGrid */}
+
+      {/* BEGIN: BottomTwoColumnGrid */}
+      <section className="grid grid-cols-1 lg:grid-cols-2 gap-6" data-purpose="skills-and-recommendations">
+        {/* Left Card: Your Skill Progress */}
+        <div className="bg-white border border-[#EAE5DE] rounded-2xl p-6 shadow-soft flex flex-col justify-between">
+          <div>
+            <div className="flex items-center gap-2.5 mb-1">
+              <div className="w-7 h-7 rounded-lg bg-[#FEF3C7] text-[#D97706] flex items-center justify-center">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
+                  <path d="M16 8v10M12 4v14M8 12v6" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </div>
+              <h3 className="text-base font-bold text-[#1E232A]">Your Skill Progress</h3>
+            </div>
+            <p className="text-xs text-charcoal-muted mb-6">
+              Track the skills you're developing for your dream career.
+            </p>
+
+            {/* Skill Items */}
+            <div className="space-y-5">
+              <div>
+                <div className="flex items-center justify-between text-xs font-semibold mb-1.5">
+                  <span className="text-[#1E232A]">JavaScript</span>
+                  <span className="text-[#0E86D4] font-bold">75%</span>
+                </div>
+                <div className="w-full h-2 rounded-full bg-[#EFE9DE] overflow-hidden">
+                  <div className="h-full bg-[#0E86D4] rounded-full" style={{ width: '75%' }} />
+                </div>
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between text-xs font-semibold mb-1.5">
+                  <span className="text-[#1E232A]">React</span>
+                  <span className="text-[#0E86D4] font-bold">40%</span>
+                </div>
+                <div className="w-full h-2 rounded-full bg-[#EFE9DE] overflow-hidden">
+                  <div className="h-full bg-[#38A4F6] rounded-full" style={{ width: '40%' }} />
+                </div>
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between text-xs font-semibold mb-1.5">
+                  <span className="text-[#1E232A]">System Design</span>
+                  <span className="text-[#0E86D4] font-bold">15%</span>
+                </div>
+                <div className="w-full h-2 rounded-full bg-[#EFE9DE] overflow-hidden">
+                  <div className="h-full bg-[#93C5FD] rounded-full" style={{ width: '15%' }} />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom View All Link */}
+          <div className="mt-8 pt-4 text-center border-t border-[#F2ECE4]">
+            <Link
+              href="/profile"
+              className="text-xs font-bold text-[#0E86D4] hover:text-[#0269B3] inline-flex items-center gap-1 transition-colors"
+            >
+              <span>View All Skills</span>
+              <span className="text-xs">&gt;</span>
+            </Link>
+          </div>
+        </div>
+
+        {/* Right Card: Recommended for You */}
+        <div className="bg-white border border-[#EAE5DE] rounded-2xl p-6 shadow-soft flex flex-col justify-between">
+          <div>
+            <div className="flex items-center gap-2.5 mb-1">
+              <div className="w-7 h-7 rounded-lg bg-[#F0FDF4] text-[#16A34A] flex items-center justify-center">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
+                  <path d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </div>
+              <h3 className="text-base font-bold text-[#1E232A]">Recommended for You</h3>
+            </div>
+            <p className="text-xs text-charcoal-muted mb-4">
+              Curated milestones to accelerate your career growth.
+            </p>
+
+            <div className="space-y-2.5">
+              {/* Item 1 */}
+              <div className="bg-[#FAF8F5] border border-[#EBE5DC] rounded-xl p-3 flex items-center justify-between gap-3 hover:border-[#D9D2C5] transition-colors">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h4 className="text-xs font-bold text-[#1E232A] truncate">Learn React Fundamentals</h4>
+                    <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-[#EFF6FF] text-[#1D4ED8]">
+                      Learning · 20m
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-charcoal-muted truncate mt-0.5">
+                    Strengthen your front-end development skills
+                  </p>
+                </div>
+                <Link
+                  href="/modes"
+                  className="px-3 py-1.5 rounded-lg bg-[#0E86D4] hover:bg-[#0269B3] text-white text-xs font-semibold flex-shrink-0 transition-colors"
+                >
+                  Start
+                </Link>
+              </div>
+
+              {/* Item 2 */}
+              <div className="bg-[#FAF8F5] border border-[#EBE5DC] rounded-xl p-3 flex items-center justify-between gap-3 hover:border-[#D9D2C5] transition-colors">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h4 className="text-xs font-bold text-[#1E232A] truncate">Practice Data Structures</h4>
+                    <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-[#ECFDF5] text-[#065F46]">
+                      Practice · +100 XP
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-charcoal-muted truncate mt-0.5">
+                    Improve your problem-solving and coding skills
+                  </p>
+                </div>
+                <Link
+                  href="/modes"
+                  className="px-3 py-1.5 rounded-lg bg-white border border-[#CBD5E1] hover:bg-gray-50 text-[#1E232A] text-xs font-semibold flex-shrink-0 transition-colors"
+                >
+                  Practice
+                </Link>
+              </div>
+
+              {/* Item 3 */}
+              <div className="bg-[#FAF8F5] border border-[#EBE5DC] rounded-xl p-3 flex items-center justify-between gap-3 hover:border-[#D9D2C5] transition-colors">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h4 className="text-xs font-bold text-[#1E232A] truncate">Explore Backend Development</h4>
+                    <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-[#FEF3C7] text-[#92400E]">
+                      Career Skills
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-charcoal-muted truncate mt-0.5">
+                    Discover essential backend technologies
+                  </p>
+                </div>
+                <Link
+                  href="/paths"
+                  className="px-3 py-1.5 rounded-lg bg-white border border-[#CBD5E1] hover:bg-gray-50 text-[#1E232A] text-xs font-semibold flex-shrink-0 transition-colors"
+                >
+                  Explore
+                </Link>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom View All Link */}
+          <div className="mt-4 pt-4 text-center border-t border-[#F2ECE4]">
+            <Link
+              href="/modes"
+              className="text-xs font-bold text-[#0E86D4] hover:text-[#0269B3] inline-flex items-center gap-1 transition-colors"
+            >
+              <span>View All Recommendations</span>
+              <span className="text-xs">&gt;</span>
+            </Link>
+          </div>
+        </div>
+      </section>
+      {/* END: BottomTwoColumnGrid */}
     </div>
   );
 }

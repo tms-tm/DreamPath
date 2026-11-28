@@ -2,88 +2,99 @@
 
 import React from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useProgressionStore } from '@/stores/useProgressionStore';
-import { Moon, Sun, Flame, Volume2, VolumeX, Sparkles } from 'lucide-react';
-import { EDUCATION_TIERS } from '@/types/career';
+import { CAREER_PATHS } from '@/types/career';
 import { speakText, stopSpeaking } from '@/utils/sound';
 
 export function Header() {
-  const { profile, toggleColorMode, setSettings, totalXp, simulatedSalary } = useProgressionStore();
-  const tier = EDUCATION_TIERS[profile.educationTier] || EDUCATION_TIERS.aurora;
+  const pathname = usePathname();
+  const { profile, setSettings, setActiveCareer } = useProgressionStore();
+  const activeCareer =
+    CAREER_PATHS.find((c) => c.id === profile.activeCareerId) || CAREER_PATHS[0];
 
   const handleAudioToggle = () => {
     const nextVal = !profile.readAloudEnabled;
     setSettings({ readAloudEnabled: nextVal });
     if (nextVal) {
-      speakText(`Voice assistance enabled for ${profile.name}. Explore your dreams with confidence!`);
+      speakText(`Voice assistance enabled for ${profile.name}.`);
     } else {
       stopSpeaking();
     }
   };
 
+  const isProfile = pathname === '/profile';
+
   return (
-    <header className="h-18 px-6 bg-[#0a0d1b]/95 backdrop-blur border-b border-[#1e2338] flex items-center justify-between sticky top-0 z-30 select-none">
-      <div>
-        <div className="text-[11px] font-extrabold tracking-widest uppercase text-indigo-400 flex items-center gap-2">
-          <span>YOUR DREAM DASHBOARD</span>
-          <span className="inline-block w-1 h-1 rounded-full bg-indigo-400"></span>
-          <span className="text-amber-400 font-semibold">{tier.name} Tier ({tier.targetAge})</span>
-        </div>
-        <h1 className="text-xl font-bold text-white tracking-tight">
-          Good evening, {profile.name}
-        </h1>
+    <header className="h-16 px-6 sm:px-8 flex items-center justify-between bg-surface/90 backdrop-blur-md sticky top-0 z-40 select-none">
+      {/* Left title / Greeting & Career Track Picker */}
+      <div className="flex items-center gap-3.5">
+        {isProfile ? (
+          <h1 className="text-xl font-bold tracking-tight text-on-surface">
+            Profile
+          </h1>
+        ) : (
+          <>
+            <h1 className="text-lg font-bold tracking-tight text-on-surface">
+              Good evening, {profile.name}
+            </h1>
+
+            {/* Career Selector Dropdown matching Stitch Screen */}
+            <div className="relative">
+              <select
+                value={activeCareer.id}
+                onChange={(e) => setActiveCareer(e.target.value)}
+                className="appearance-none inline-flex items-center gap-1.5 pl-3 pr-8 py-1 rounded-full border border-outline-variant/40 bg-surface-container-lowest text-xs font-semibold text-on-surface hover:border-outline transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/30"
+              >
+                {CAREER_PATHS.map((career) => (
+                  <option key={career.id} value={career.id}>
+                    {career.title}
+                  </option>
+                ))}
+              </select>
+              <span className="material-symbols-outlined text-[16px] text-on-surface-variant absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none">
+                expand_more
+              </span>
+            </div>
+          </>
+        )}
       </div>
 
-      <div className="flex items-center gap-3.5">
-        {/* Streak Counter */}
-        <div className="px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300 flex items-center gap-2 text-xs font-bold">
-          <Flame className="w-4 h-4 text-amber-400 fill-amber-400 animate-bounce" />
-          <span>{profile.streakDays} day streak</span>
-        </div>
-
-        {/* Total XP Pill */}
-        <div className="px-3 py-1.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 flex items-center gap-2 text-xs font-bold">
-          <Sparkles className="w-4 h-4 text-indigo-400" />
-          <span>{totalXp.toLocaleString()} XP</span>
-        </div>
-
-        {/* Virtual Salary Pill */}
-        <div className="hidden sm:flex px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 items-center gap-1.5 text-xs font-bold">
-          <span className="text-emerald-400 font-black">$</span>
-          <span>${simulatedSalary.toLocaleString()} /mo</span>
-        </div>
-
+      {/* Action items */}
+      <div className="flex items-center gap-2.5">
         {/* Read Aloud Toggle */}
         <button
           onClick={handleAudioToggle}
-          title={profile.readAloudEnabled ? 'Voice Assist On (Click to mute)' : 'Voice Assist Off (Click to activate)'}
-          className={`p-2 rounded-xl border transition-all ${
+          title={profile.readAloudEnabled ? 'Voice Assist On' : 'Voice Assist Off'}
+          className={`w-9 h-9 rounded-full border flex items-center justify-center transition-colors ${
             profile.readAloudEnabled
-              ? 'bg-indigo-600/20 text-indigo-300 border-indigo-500/40 hover:bg-indigo-600/30'
-              : 'bg-[#12162a] text-slate-400 border-[#212745] hover:text-white'
+              ? 'bg-primary-fixed text-on-primary-fixed border-primary/40'
+              : 'border-outline-variant/40 bg-surface-container-lowest text-on-surface-variant hover:bg-surface-container-low'
           }`}
         >
-          {profile.readAloudEnabled ? <Volume2 className="w-4 h-4 text-indigo-400" /> : <VolumeX className="w-4 h-4" />}
+          <span className="material-symbols-outlined text-[18px]">
+            {profile.readAloudEnabled ? 'volume_up' : 'volume_off'}
+          </span>
         </button>
 
-        {/* Dark/Light Color Mode Toggle */}
-        <button
-          onClick={toggleColorMode}
-          title="Toggle color mode"
-          className="p-2 rounded-xl bg-[#12162a] text-slate-400 border border-[#212745] hover:text-white transition-all"
+        {/* Notifications */}
+        <Link
+          href="/notifications"
+          aria-label="Notifications"
+          className="relative w-9 h-9 rounded-full border border-outline-variant/40 bg-surface-container-lowest hover:bg-surface-container-low flex items-center justify-center text-on-surface-variant transition-colors"
         >
-          {profile.colorMode === 'dark' ? <Sun className="w-4 h-4 text-amber-300" /> : <Moon className="w-4 h-4 text-indigo-300" />}
-        </button>
+          <span className="material-symbols-outlined text-[18px]">notifications</span>
+          <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-red-500 ring-2 ring-white"></span>
+        </Link>
 
-        {/* User Avatar Circle */}
+        {/* User profile avatar circle matching Stitch */}
         <Link
           href="/profile"
-          className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white font-black flex items-center justify-center text-sm shadow-md hover:scale-105 transition-transform"
+          className="w-9 h-9 rounded-full bg-primary-fixed flex items-center justify-center shrink-0 ml-1 text-on-primary-fixed font-bold text-sm shadow-xs hover:opacity-90 transition-opacity"
         >
-          {profile.avatarChar}
+          {profile.avatarChar || 'A'}
         </Link>
       </div>
     </header>
   );
 }
-

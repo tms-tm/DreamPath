@@ -1,388 +1,402 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
-import {
-  BookOpen,
-  HelpCircle,
-  PlayCircle,
-  ArrowRight,
-  Sparkles,
-  CheckCircle2,
-  Volume2,
-  Star
-} from 'lucide-react';
 import { useProgressionStore } from '@/stores/useProgressionStore';
-import { CAREER_PATHS } from '@/types/career';
-import { QUIZ_DATABASE } from '@/data/quizzes';
-import { STUDY_DATABASE } from '@/data/studies';
-import { speakText, playSound } from '@/utils/sound';
 
-export default function ModesHubPage() {
-  const { profile, applyReward, applySkillImpacts } = useProgressionStore();
-  const [activeTab, setActiveTab] = useState<'hub' | 'quiz' | 'study'>('hub');
-  
-  // Quiz state
-  const activeCareer = CAREER_PATHS.find((c) => c.id === profile.activeCareerId) || CAREER_PATHS[0];
-  const quiz = QUIZ_DATABASE[activeCareer.id] || QUIZ_DATABASE['software-engineer'];
-  const study = STUDY_DATABASE[activeCareer.id] || STUDY_DATABASE['software-engineer'];
-
-  const [currentQIdx, setCurrentQIdx] = useState(0);
-  const [selectedOpt, setSelectedOpt] = useState<number | null>(null);
-  const [quizScore, setQuizScore] = useState(0);
-  const [quizFinished, setQuizFinished] = useState(false);
-  const [studyReadCompleted, setStudyReadCompleted] = useState(false);
-
-  const handleAnswerQuiz = (index: number) => {
-    playSound('click');
-    setSelectedOpt(index);
-    const isCorrect = quiz.questions[currentQIdx].options[index].isCorrect;
-    if (isCorrect) {
-      setQuizScore((prev) => prev + 1);
-    }
-  };
-
-  const handleNextQuizQuestion = () => {
-    if (currentQIdx < quiz.questions.length - 1) {
-      setCurrentQIdx((prev) => prev + 1);
-      setSelectedOpt(null);
-    } else {
-      playSound('success');
-      setQuizFinished(true);
-      applyReward({ xp: quiz.xpReward, salaryDelta: 100, missionCountDelta: 1 });
-      applySkillImpacts([{ skillId: 'problem-solving', xp: quiz.xpReward, competencyDelta: 5 }]);
-    }
-  };
-
-  const handleMarkStudyCompleted = () => {
-    playSound('success');
-    setStudyReadCompleted(true);
-    applyReward({ xp: study.xpReward, salaryDelta: 60 });
-  };
+export default function PracticeModesPage() {
+  const { profile, totalXp } = useProgressionStore();
 
   return (
-    <div className="space-y-8 max-w-5xl mx-auto">
-      {/* Modes Navigation Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <div className="text-xs font-bold uppercase tracking-wider text-indigo-400">
-            THREE INTERACTIVE LEARNING MODES
+    <div className="flex flex-col w-full gap-7 pb-16 animate-fade-in max-w-7xl mx-auto">
+      {/* Top Header & Intro */}
+      <div className="flex flex-col gap-2 pt-1">
+        <div className="flex items-center gap-2">
+          <span className="w-2.5 h-2.5 rounded-full bg-[#4e6074] shrink-0"></span>
+          <span className="text-[11px] font-semibold text-[#4e6074] uppercase tracking-widest">
+            Interactive Learning Hubs
+          </span>
+        </div>
+        <h1 className="text-3xl lg:text-[40px] lg:leading-[48px] font-extrabold text-[#1b1c18] tracking-tight">
+          Practice Modes &amp; Skill Labs
+        </h1>
+        <p className="text-sm lg:text-[15px] text-[#43474c] leading-relaxed max-w-3xl">
+          Learn foundational theory, test your knowledge in rapid quizzes, or run realistic workplace simulation scenarios.
+        </p>
+      </div>
+
+      {/* Daily Target Tracker Card (Full Width Banner below title, matching screenshot) */}
+      <div className="bg-white border border-[#e4e2dc] p-6 rounded-2xl shadow-[0_2px_12px_rgba(27,28,24,0.02)] flex flex-col gap-4 w-full">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3.5">
+            <div className="w-10 h-10 rounded-xl bg-[#cfe2fa] flex items-center justify-center shrink-0">
+              <span
+                className="material-symbols-outlined text-[#091d2e] text-[20px]"
+                style={{ fontVariationSettings: "'FILL' 1" }}
+              >
+                local_fire_department
+              </span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-[11px] font-semibold text-[#5e626b] uppercase tracking-wider">
+                Current Streak
+              </span>
+              <span className="text-base font-bold text-[#1b1c18]">
+                {profile.streakDays || 7} Days in a Row
+              </span>
+            </div>
           </div>
-          <h1 className="text-3xl font-extrabold text-white tracking-tight mt-1">
-            Game Mode Hub
-          </h1>
-          <p className="mt-1 text-slate-300 text-sm">
-            Learn theory, test comprehension through MCQs, or engage in real-world branching scenarios.
-          </p>
+
+          <div className="text-right">
+            <span className="text-[11px] font-semibold text-[#5e626b] uppercase tracking-wider">
+              Daily Target
+            </span>
+            <p className="text-base font-bold text-[#1b1c18]">
+              180 <span className="text-xs font-normal text-[#5e626b]">/ 250 XP</span>
+            </p>
+          </div>
         </div>
 
-        <div className="flex items-center gap-2 p-1 bg-[#0f1224] rounded-2xl border border-[#1e233d]">
-          <button
-            onClick={() => {
-              playSound('click');
-              setActiveTab('hub');
-            }}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-              activeTab === 'hub'
-                ? 'bg-indigo-600 text-white shadow'
-                : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            Hub Overview
-          </button>
-          <button
-            onClick={() => {
-              playSound('click');
-              setActiveTab('quiz');
-            }}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-              activeTab === 'quiz'
-                ? 'bg-indigo-600 text-white shadow'
-                : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            Quiz Mode
-          </button>
-          <button
-            onClick={() => {
-              playSound('click');
-              setActiveTab('study');
-            }}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-              activeTab === 'study'
-                ? 'bg-indigo-600 text-white shadow'
-                : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            Study Notes
-          </button>
+        {/* Progress Gauge */}
+        <div className="w-full bg-[#eae8e1] h-2 rounded-full overflow-hidden">
+          <div
+            className="bg-[#4e6074] h-full rounded-full transition-all duration-700 ease-out"
+            style={{ width: '72%' }}
+          ></div>
+        </div>
+
+        <div className="flex items-center justify-between text-xs text-[#5e626b]">
+          <span>72% Completed Today</span>
+          <span className="text-[#4e6074] font-bold">+70 XP needed</span>
         </div>
       </div>
 
-      {activeTab === 'hub' && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Study Mode Card */}
-          <div className="p-6 rounded-3xl bg-[#0e1224] border border-[#1e233d] flex flex-col justify-between group hover:border-emerald-500/50 transition-all">
-            <div>
-              <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center mb-4">
-                <BookOpen className="w-6 h-6" />
+      {/* The 3 Primary Game Modes (Hero 3-Card Interactive Grid matching screenshot) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* MODE 1: Study Mode */}
+        <div className="bg-white border border-[#e4e2dc] rounded-2xl p-6 shadow-[0_2px_12px_rgba(27,28,24,0.02)] hover:shadow-md transition-all duration-300 flex flex-col justify-between">
+          <div className="flex flex-col gap-4">
+            <div className="flex items-start justify-between">
+              <div className="w-12 h-12 rounded-xl bg-[#cfe2fa] flex items-center justify-center text-[#091d2e] shrink-0">
+                <span
+                  className="material-symbols-outlined text-[24px]"
+                  style={{ fontVariationSettings: "'FILL' 1" }}
+                >
+                  menu_book
+                </span>
               </div>
-              <span className="text-[11px] font-bold text-emerald-400 uppercase tracking-wide">
-                MODE 01 • READ & LEARN
+              <span className="px-3 py-1 bg-[#dceafb] text-[#2c5282] rounded-full text-xs font-bold flex items-center gap-1">
+                <span className="material-symbols-outlined text-[14px]">bolt</span>
+                +20 XP / Lesson
               </span>
-              <h3 className="text-xl font-bold text-white mt-1">Study Mode</h3>
-              <p className="mt-2 text-sm text-slate-400 leading-relaxed">
-                Interactive theory notes, key terminology glossaries, and audio read-aloud support for deeper understanding.
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <span className="text-[11px] font-semibold text-[#5e626b] uppercase tracking-wider">
+                Theory &amp; Context
+              </span>
+              <h2 className="text-xl font-bold text-[#1b1c18] tracking-tight">Study Mode</h2>
+              <p className="text-xs text-[#5e626b] leading-relaxed">
+                Read bite-sized lessons, explore interactive industry terminology, and listen to AI read-aloud explanations.
               </p>
             </div>
-            <button
-              onClick={() => setActiveTab('study')}
-              className="mt-6 w-full py-2.5 rounded-xl bg-[#141933] hover:bg-[#1a2040] text-emerald-300 font-bold text-xs border border-[#222a55] transition-all flex items-center justify-center gap-2"
-            >
-              <span>Read interactive notes</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
+
+            {/* Highlight Capsule */}
+            <div className="bg-[#f6f4ed] p-4 rounded-xl flex flex-col gap-2 border border-[#e4e2dc]/60">
+              <div className="flex items-center justify-between text-[11px]">
+                <span className="text-[#5e626b] font-semibold">Active Module</span>
+                <span className="text-[#4e6074] font-bold">Lesson 4 of 12</span>
+              </div>
+              <p className="text-xs font-bold text-[#1b1c18] truncate">
+                Software Engineering: Clean Code
+              </p>
+              <div className="w-full bg-[#eae8e1] h-1.5 rounded-full overflow-hidden mt-1">
+                <div className="bg-[#4e6074] h-full rounded-full" style={{ width: '33%' }}></div>
+              </div>
+            </div>
           </div>
 
-          {/* Quiz Mode Card */}
-          <div className="p-6 rounded-3xl bg-[#0e1224] border border-[#1e233d] flex flex-col justify-between group hover:border-amber-500/50 transition-all">
-            <div>
-              <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center mb-4">
-                <HelpCircle className="w-6 h-6" />
-              </div>
-              <span className="text-[11px] font-bold text-amber-400 uppercase tracking-wide">
-                MODE 02 • TEST KNOWLEDGE
-              </span>
-              <h3 className="text-xl font-bold text-white mt-1">Quiz Mode</h3>
-              <p className="mt-2 text-sm text-slate-400 leading-relaxed">
-                Card-based multiple choice challenges with immediate explanations, star rating calculators, and instant XP gains.
-              </p>
-            </div>
-            <button
-              onClick={() => setActiveTab('quiz')}
-              className="mt-6 w-full py-2.5 rounded-xl bg-[#141933] hover:bg-[#1a2040] text-amber-300 font-bold text-xs border border-[#222a55] transition-all flex items-center justify-center gap-2"
-            >
-              <span>Start quiz challenge</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
-          </div>
-
-          {/* Simulation Mode Card */}
-          <div className="p-6 rounded-3xl bg-[#0e1224] border border-[#1e233d] flex flex-col justify-between group hover:border-indigo-500/50 transition-all">
-            <div>
-              <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center mb-4">
-                <PlayCircle className="w-6 h-6" />
-              </div>
-              <span className="text-[11px] font-bold text-indigo-400 uppercase tracking-wide">
-                MODE 03 • CASE STUDIES
-              </span>
-              <h3 className="text-xl font-bold text-white mt-1">Simulation Mode</h3>
-              <p className="mt-2 text-sm text-slate-400 leading-relaxed">
-                Branching incident trees, NPC mentor guidance, and real consequences affecting career salary and skill milestones.
-              </p>
-            </div>
+          <div className="mt-6">
             <Link
-              href={`/simulation?career=${activeCareer.id}`}
-              className="mt-6 w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-2"
+              href="/paths"
+              className="w-full py-3 px-4 bg-[#cfe2fa] hover:bg-[#bdd6f7] text-[#091d2e] rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2"
             >
-              <span>Launch live simulation</span>
-              <ArrowRight className="w-4 h-4" />
+              <span>Read Interactive Notes</span>
+              <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
             </Link>
           </div>
         </div>
-      )}
 
-      {/* QUIZ MODE VIEW */}
-      {activeTab === 'quiz' && (
-        <div className="p-6 sm:p-8 rounded-3xl bg-[#0e1224] border border-[#1e233d] space-y-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <span className="text-xs font-bold text-amber-400 uppercase tracking-wide">
-                QUIZ CHALLENGE • {activeCareer.title}
-              </span>
-              <h2 className="text-2xl font-bold text-white mt-1">{quiz.title}</h2>
-            </div>
-            <span className="text-xs px-3 py-1 rounded-full bg-amber-500/10 text-amber-300 border border-amber-500/30 font-bold">
-              +{quiz.xpReward} XP
-            </span>
-          </div>
-
-          {quizFinished ? (
-            <div className="py-8 text-center space-y-4">
-              <div className="w-16 h-16 rounded-full bg-amber-500/20 text-amber-400 mx-auto flex items-center justify-center">
-                <Star className="w-8 h-8 fill-amber-400 text-amber-400" />
+        {/* MODE 2: Quiz Mode */}
+        <div className="bg-white border border-[#e4e2dc] rounded-2xl p-6 shadow-[0_2px_12px_rgba(27,28,24,0.02)] hover:shadow-md transition-all duration-300 flex flex-col justify-between">
+          <div className="flex flex-col gap-4">
+            <div className="flex items-start justify-between">
+              <div className="w-12 h-12 rounded-xl bg-[#ddf2e4] flex items-center justify-center text-[#2e6f49] shrink-0">
+                <span
+                  className="material-symbols-outlined text-[24px]"
+                  style={{ fontVariationSettings: "'FILL' 1" }}
+                >
+                  quiz
+                </span>
               </div>
-              <h3 className="text-2xl font-black text-white">Quiz Completed!</h3>
-              <p className="text-sm text-slate-300">
-                You scored <span className="font-bold text-white">{quizScore}</span> out of{' '}
-                <span className="font-bold text-white">{quiz.questions.length}</span> correct.
+              <span className="px-3 py-1 bg-[#ddf2e4] text-[#2e6f49] rounded-full text-xs font-bold flex items-center gap-1">
+                <span className="material-symbols-outlined text-[14px]">timer</span>
+                Timed · +40 XP
+              </span>
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <span className="text-[11px] font-semibold text-[#5e626b] uppercase tracking-wider">
+                Knowledge Checkpoint
+              </span>
+              <h2 className="text-xl font-bold text-[#1b1c18] tracking-tight">Quiz Mode</h2>
+              <p className="text-xs text-[#5e626b] leading-relaxed">
+                Fast-paced multiple choice checks tailored to the Aurora educational tier (Ages 10–12 / Upper Primary).
               </p>
-              <div className="inline-flex gap-2 text-amber-400 justify-center">
-                {[1, 2, 3].map((s) => (
-                  <Star
-                    key={s}
-                    className={`w-6 h-6 ${
-                      s <= (quizScore >= 3 ? 3 : quizScore >= 2 ? 2 : 1)
-                        ? 'fill-amber-400 text-amber-400'
-                        : 'text-slate-600'
-                    }`}
-                  />
-                ))}
+            </div>
+
+            {/* Highlight Capsule */}
+            <div className="bg-[#f6f4ed] p-4 rounded-xl flex flex-col gap-2 border border-[#e4e2dc]/60">
+              <div className="flex items-center justify-between text-[11px]">
+                <span className="text-[#5e626b] font-semibold">Current Challenge</span>
+                <span className="flex items-center gap-0.5 text-amber-500">
+                  <span className="material-symbols-outlined text-[14px]" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+                  <span className="material-symbols-outlined text-[14px]" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+                  <span className="material-symbols-outlined text-[14px]" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+                </span>
               </div>
-              <div className="pt-4">
-                <button
-                  onClick={() => {
-                    setCurrentQIdx(0);
-                    setSelectedOpt(null);
-                    setQuizScore(0);
-                    setQuizFinished(false);
-                  }}
-                  className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs"
-                >
-                  Retake Quiz
-                </button>
+              <p className="text-xs font-bold text-[#1b1c18] truncate">
+                Frontend Debugging &amp; DOM Layout
+              </p>
+              <div className="flex items-center justify-between text-xs text-[#5e626b] mt-1">
+                <span>Best Accuracy</span>
+                <span className="font-bold text-[#2e6f49]">96% High Score</span>
               </div>
             </div>
-          ) : (
-            <div>
-              <div className="text-xs font-semibold text-slate-400 mb-2">
-                Question {currentQIdx + 1} of {quiz.questions.length}
-              </div>
-              <div className="text-lg font-bold text-white leading-relaxed">
-                {quiz.questions[currentQIdx].question}
-              </div>
+          </div>
 
-              {profile.readAloudEnabled && (
-                <button
-                  onClick={() => speakText(quiz.questions[currentQIdx].question)}
-                  className="mt-2 inline-flex items-center gap-1.5 text-xs text-indigo-400 hover:text-indigo-300 font-semibold"
-                >
-                  <Volume2 className="w-4 h-4" />
-                  <span>Read aloud question</span>
-                </button>
-              )}
-
-              <div className="mt-5 space-y-3">
-                {quiz.questions[currentQIdx].options.map((opt, i) => {
-                  const isSelected = selectedOpt === i;
-                  return (
-                    <button
-                      key={opt.label}
-                      onClick={() => handleAnswerQuiz(i)}
-                      className={`w-full text-left p-4 rounded-2xl border transition-all flex items-start gap-3 ${
-                        isSelected
-                          ? opt.isCorrect
-                            ? 'bg-emerald-500/20 border-emerald-500 text-white'
-                            : 'bg-rose-500/20 border-rose-500 text-white'
-                          : 'bg-[#141830] border-[#222952] text-slate-200 hover:bg-[#1a2040]'
-                      }`}
-                    >
-                      <span className="w-6 h-6 rounded-lg bg-[#1f2652] text-indigo-300 font-bold text-xs flex items-center justify-center shrink-0">
-                        {opt.label}
-                      </span>
-                      <div className="flex-1 text-sm">
-                        <div>{opt.text}</div>
-                        {isSelected && (
-                          <div className="mt-2 text-xs text-slate-300 italic">
-                            {opt.explanation}
-                          </div>
-                        )}
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-
-              <div className="mt-6 flex justify-end">
-                <button
-                  disabled={selectedOpt === null}
-                  onClick={handleNextQuizQuestion}
-                  className={`px-5 py-2.5 rounded-xl font-bold text-xs transition-all ${
-                    selectedOpt !== null
-                      ? 'bg-indigo-600 hover:bg-indigo-500 text-white'
-                      : 'bg-[#181d39] text-slate-500 cursor-not-allowed'
-                  }`}
-                >
-                  {currentQIdx < quiz.questions.length - 1 ? 'Next Question' : 'Finish Quiz'}
-                </button>
-              </div>
-            </div>
-          )}
+          <div className="mt-6">
+            <Link
+              href="/simulation"
+              className="w-full py-3 px-4 bg-[#ddf2e4] hover:bg-[#c9e8d2] text-[#2e6f49] rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2"
+            >
+              <span>Start Quiz Challenge</span>
+              <span className="material-symbols-outlined text-[16px]">play_arrow</span>
+            </Link>
+          </div>
         </div>
-      )}
 
-      {/* STUDY MODE VIEW */}
-      {activeTab === 'study' && (
-        <div className="p-6 sm:p-8 rounded-3xl bg-[#0e1224] border border-[#1e233d] space-y-6">
-          <div className="flex items-center justify-between border-b border-[#1b203c] pb-4">
-            <div>
-              <span className="text-xs font-bold text-emerald-400 uppercase tracking-wide">
-                STUDY NOTES • {activeCareer.title}
+        {/* MODE 3: Simulation Mode */}
+        <div className="bg-white border border-[#e4e2dc] rounded-2xl p-6 shadow-[0_2px_12px_rgba(27,28,24,0.02)] hover:shadow-md transition-all duration-300 flex flex-col justify-between">
+          <div className="flex flex-col gap-4">
+            <div className="flex items-start justify-between">
+              <div className="w-12 h-12 rounded-xl bg-[#f8dfec] flex items-center justify-center text-[#7e3b5e] shrink-0">
+                <span
+                  className="material-symbols-outlined text-[24px]"
+                  style={{ fontVariationSettings: "'FILL' 1" }}
+                >
+                  smart_toy
+                </span>
+              </div>
+              <span className="px-3 py-1 bg-[#f8dfec] text-[#7e3b5e] rounded-full text-xs font-bold flex items-center gap-1">
+                <span className="material-symbols-outlined text-[14px]">psychology</span>
+                Workplace · +80 XP
               </span>
-              <h2 className="text-2xl font-bold text-white mt-1">{study.title}</h2>
-              <div className="text-xs text-slate-400 mt-1">{study.readTime}</div>
             </div>
-            {profile.readAloudEnabled && (
-              <button
-                onClick={() =>
-                  speakText(
-                    study.sections.map((s) => `${s.heading}. ${s.body.join(' ')}`).join('. ')
-                  )
-                }
-                className="px-3 py-1.5 rounded-xl bg-indigo-900/30 border border-indigo-500/30 text-indigo-300 text-xs font-bold flex items-center gap-1.5"
-              >
-                <Volume2 className="w-4 h-4" />
-                <span>Listen to article</span>
-              </button>
-            )}
+
+            <div className="flex flex-col gap-1">
+              <span className="text-[11px] font-semibold text-[#5e626b] uppercase tracking-wider">
+                Branching Narrative
+              </span>
+              <h2 className="text-xl font-bold text-[#1b1c18] tracking-tight">Simulation Mode</h2>
+              <p className="text-xs text-[#5e626b] leading-relaxed">
+                Step into real scenarios guided by Mentor Maya. Make decisions that affect your virtual project outcomes.
+              </p>
+            </div>
+
+            {/* Highlight Capsule */}
+            <div className="bg-[#f6f4ed] p-4 rounded-xl flex flex-col gap-2 border border-[#e4e2dc]/60">
+              <div className="flex items-center justify-between text-[11px]">
+                <span className="text-[#5e626b] font-semibold">Scenario #42</span>
+                <span className="px-2 py-0.5 rounded-full bg-[#eae8e1] text-[#43474c] font-bold text-[10px]">
+                  Active
+                </span>
+              </div>
+              <p className="text-xs font-bold text-[#1b1c18] truncate">
+                The Disappearing Checkout Button
+              </p>
+              <div className="flex items-center gap-2 mt-1">
+                <div className="w-5 h-5 rounded-full bg-[#f8dfec] flex items-center justify-center text-[#7e3b5e] text-[10px] font-bold">
+                  M
+                </div>
+                <span className="text-[11px] text-[#5e626b]">Mentor Maya is waiting for review</span>
+              </div>
+            </div>
           </div>
 
-          <div className="space-y-6 text-slate-300 text-sm leading-relaxed">
-            {study.sections.map((section, idx) => (
-              <div key={idx} className="space-y-2">
-                <h3 className="text-base font-bold text-white">{section.heading}</h3>
-                {section.body.map((p, pIdx) => (
-                  <p key={pIdx}>{p}</p>
-                ))}
-
-                {section.keyTerms && (
-                  <div className="mt-3 p-4 rounded-2xl bg-[#141833] border border-[#232b57] space-y-2">
-                    <div className="text-xs font-extrabold uppercase tracking-wide text-indigo-400">
-                      Key Vocabulary
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                      {section.keyTerms.map((term) => (
-                        <div key={term.term} className="text-xs">
-                          <span className="font-bold text-white">{term.term}: </span>
-                          <span className="text-slate-400">{term.definition}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-
-          <div className="pt-4 border-t border-[#1b203c] flex items-center justify-between">
-            <span className="text-xs text-slate-400">Earn +{study.xpReward} XP upon completion</span>
-            {studyReadCompleted ? (
-              <div className="px-4 py-2 rounded-xl bg-emerald-500/20 text-emerald-300 text-xs font-bold border border-emerald-500/30 flex items-center gap-1.5">
-                <CheckCircle2 className="w-4 h-4" />
-                <span>Completed</span>
-              </div>
-            ) : (
-              <button
-                onClick={handleMarkStudyCompleted}
-                className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md transition-all"
-              >
-                Mark as read (+{study.xpReward} XP)
-              </button>
-            )}
+          <div className="mt-6">
+            <Link
+              href="/simulation"
+              className="w-full py-3 px-4 bg-[#cfe2fa] hover:bg-[#bdd6f7] text-[#091d2e] rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2"
+            >
+              <span>Launch Simulation</span>
+              <span className="material-symbols-outlined text-[16px]">terminal</span>
+            </Link>
           </div>
         </div>
-      )}
+      </div>
+
+      {/* Bottom Contextual Strip: Mastered Skills & Upcoming Milestones */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch mt-2">
+        {/* Left Column (7 cols): Recently Mastered Skills */}
+        <div className="lg:col-span-7 bg-white border border-[#e4e2dc] rounded-2xl p-6 shadow-[0_2px_12px_rgba(27,28,24,0.02)] flex flex-col justify-between">
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <span className="material-symbols-outlined text-[#4e6074] text-[22px]">verified</span>
+                <h3 className="text-base font-bold text-[#1b1c18]">Recently Mastered Skills</h3>
+              </div>
+              <Link
+                href="/paths"
+                className="text-xs font-semibold text-[#4e6074] hover:underline flex items-center gap-0.5"
+              >
+                <span>Skill Tree</span>
+                <span className="material-symbols-outlined text-[16px]">chevron_right</span>
+              </Link>
+            </div>
+
+            <div className="flex flex-col gap-3 mt-1">
+              {/* Skill 1 */}
+              <div className="p-3.5 rounded-xl bg-[#f6f4ed] hover:bg-[#f0eee7] transition-colors flex items-center justify-between gap-4 border border-[#e4e2dc]/40">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-8 h-8 rounded-lg bg-[#ddf2e4] flex items-center justify-center text-[#2e6f49] shrink-0">
+                    <span className="material-symbols-outlined text-[18px]">check</span>
+                  </div>
+                  <div className="flex flex-col min-w-0">
+                    <span className="text-xs font-bold text-[#1b1c18] truncate">
+                      HTML/CSS Box Model
+                    </span>
+                    <span className="text-[11px] text-[#5e626b]">
+                      Validated in Quiz #18 • 100% Mastery
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 shrink-0">
+                  <span className="px-2.5 py-1 bg-[#ddf2e4] text-[#2e6f49] rounded-md text-[11px] font-bold">
+                    100%
+                  </span>
+                </div>
+              </div>
+
+              {/* Skill 2 */}
+              <div className="p-3.5 rounded-xl bg-[#f6f4ed] hover:bg-[#f0eee7] transition-colors flex items-center justify-between gap-4 border border-[#e4e2dc]/40">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-8 h-8 rounded-lg bg-[#cfe2fa] flex items-center justify-center text-[#091d2e] shrink-0">
+                    <span className="material-symbols-outlined text-[18px]">code</span>
+                  </div>
+                  <div className="flex flex-col min-w-0">
+                    <span className="text-xs font-bold text-[#1b1c18] truncate">
+                      Git Branching &amp; Pull Requests
+                    </span>
+                    <span className="text-[11px] text-[#5e626b]">
+                      Validated in Simulation #39 • Advanced
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 shrink-0">
+                  <span className="px-2.5 py-1 bg-[#cfe2fa] text-[#091d2e] rounded-md text-[11px] font-bold">
+                    85%
+                  </span>
+                </div>
+              </div>
+
+              {/* Skill 3 */}
+              <div className="p-3.5 rounded-xl bg-[#f6f4ed] hover:bg-[#f0eee7] transition-colors flex items-center justify-between gap-4 border border-[#e4e2dc]/40">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-8 h-8 rounded-lg bg-[#f8dfec] flex items-center justify-center text-[#7e3b5e] shrink-0">
+                    <span className="material-symbols-outlined text-[18px]">data_object</span>
+                  </div>
+                  <div className="flex flex-col min-w-0">
+                    <span className="text-xs font-bold text-[#1b1c18] truncate">
+                      JavaScript Functions &amp; Scope
+                    </span>
+                    <span className="text-[11px] text-[#5e626b]">
+                      Validated in Study Lab #04 • Intermediate
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 shrink-0">
+                  <span className="px-2.5 py-1 bg-[#eae8e1] text-[#5e626b] rounded-md text-[11px] font-bold">
+                    60%
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Column (5 cols): Upcoming Milestones & Quest Hub */}
+        <div className="lg:col-span-5 bg-white border border-[#e4e2dc] rounded-2xl p-6 shadow-[0_2px_12px_rgba(27,28,24,0.02)] flex flex-col justify-between">
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <span className="material-symbols-outlined text-[#4e6074] text-[22px]">military_tech</span>
+                <h3 className="text-base font-bold text-[#1b1c18]">Upcoming Milestone</h3>
+              </div>
+              <span className="px-2.5 py-1 rounded-full bg-[#cfe2fa] text-[#091d2e] text-[11px] font-bold">
+                Aurora Rank
+              </span>
+            </div>
+
+            <div className="bg-[#f6f4ed] p-4 rounded-xl flex flex-col gap-3 border border-[#e4e2dc]/40">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-xs font-bold text-[#1b1c18]">Aurora Rank Certification</p>
+                  <p className="text-[11px] text-[#5e626b] mt-0.5">
+                    Required for Junior Apprentice Badging
+                  </p>
+                </div>
+                <span className="material-symbols-outlined text-[24px] text-[#4e6074]">workspace_premium</span>
+              </div>
+
+              {/* Milestone Progress Bar */}
+              <div className="flex flex-col gap-1.5 mt-1">
+                <div className="flex justify-between text-[11px]">
+                  <span className="text-[#5e626b]">XP Progress</span>
+                  <span className="text-[#1b1c18] font-bold">
+                    {totalXp.toLocaleString()} / 1,500 XP
+                  </span>
+                </div>
+                <div className="w-full bg-[#eae8e1] h-2 rounded-full overflow-hidden">
+                  <div
+                    className="bg-[#4e6074] h-full rounded-full transition-all"
+                    style={{ width: `${Math.min(100, Math.round((totalXp / 1500) * 100))}%` }}
+                  ></div>
+                </div>
+              </div>
+              <p className="text-[11px] text-[#5e626b] italic">
+                Tip: Complete 1 simulation or 2 quizzes today to level up to Lv. 5.
+              </p>
+            </div>
+
+            {/* Quick Quest mini card */}
+            <div className="p-3.5 rounded-xl bg-[#f6f4ed] flex items-center justify-between border border-[#e4e2dc]/40">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-[#cfe2fa] flex items-center justify-center text-[#091d2e] font-bold text-xs">
+                  Q1
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-xs font-bold text-[#1b1c18]">Weekly Lab Challenge</span>
+                  <span className="text-[11px] text-[#5e626b]">
+                    Complete 3 timed quizzes (2/3 done)
+                  </span>
+                </div>
+              </div>
+              <span className="text-[11px] text-[#4e6074] font-bold">+100 XP</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
-

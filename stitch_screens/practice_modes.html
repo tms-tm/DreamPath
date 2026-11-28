@@ -1,0 +1,384 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0" name="viewport"><meta content="web_dashboard" name="shell-type"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"><link href="https://fonts.googleapis.com" rel="preconnect"><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script><script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        "colors": {
+          "on-tertiary": "#ffffff",
+          "on-primary": "#ffffff",
+          "surface-container-low": "#f6f4ed",
+          "tertiary-container": "#f3dae7",
+          "on-tertiary-fixed-variant": "#53424c",
+          "secondary-fixed": "#d3e8da",
+          "on-error-container": "#93000a",
+          "secondary-fixed-dim": "#b7cbbe",
+          "error": "#ba1a1a",
+          "primary-fixed": "#d1e4fc",
+          "surface-tint": "#4e6074",
+          "inverse-primary": "#b5c8e0",
+          "surface-container": "#f0eee7",
+          "on-primary-fixed-variant": "#36485c",
+          "surface-container-lowest": "#ffffff",
+          "inverse-surface": "#30312c",
+          "on-secondary": "#ffffff",
+          "on-surface-variant": "#43474c",
+          "surface-container-high": "#eae8e1",
+          "outline-variant": "#c4c6cd",
+          "surface": "#fbf9f2",
+          "on-surface": "#1b1c18",
+          "on-primary-container": "#526579",
+          "on-secondary-fixed": "#0d1f17",
+          "on-primary-fixed": "#091d2e",
+          "secondary-container": "#d3e8da",
+          "on-background": "#1b1c18",
+          "outline": "#74777d",
+          "surface-variant": "#e4e2dc",
+          "surface-dim": "#dcdad3",
+          "on-tertiary-container": "#715e69",
+          "on-tertiary-fixed": "#251720",
+          "on-secondary-fixed-variant": "#394b41",
+          "primary-fixed-dim": "#b5c8e0",
+          "error-container": "#ffdad6",
+          "on-error": "#ffffff",
+          "tertiary-fixed": "#f5dce9",
+          "background": "#fbf9f2",
+          "inverse-on-surface": "#f3f1ea",
+          "on-secondary-container": "#56695e",
+          "primary-container": "#cfe2fa",
+          "secondary": "#506358",
+          "primary": "#4e6074",
+          "tertiary-fixed-dim": "#d8c0cd",
+          "surface-bright": "#fbf9f2",
+          "surface-container-highest": "#e4e2dc",
+          "tertiary": "#6c5964"
+        },
+        "borderRadius": {
+          "DEFAULT": "0.25rem",
+          "lg": "0.5rem",
+          "xl": "0.75rem",
+          "full": "9999px"
+        },
+        "spacing": {
+          "gutter": "1.25rem",
+          "space-xl": "2rem",
+          "margin": "2rem",
+          "space-sm": "0.5rem",
+          "space-md": "1rem",
+          "space-xs": "0.25rem",
+          "space-lg": "1.5rem"
+        },
+        "fontFamily": {
+          "body-sm": ["Plus Jakarta Sans"],
+          "label-sm": ["Plus Jakarta Sans"],
+          "body-md": ["Plus Jakarta Sans"],
+          "headline-lg-mobile": ["Plus Jakarta Sans"],
+          "headline-lg": ["Plus Jakarta Sans"],
+          "headline-sm": ["Plus Jakarta Sans"],
+          "label-md": ["Plus Jakarta Sans"],
+          "label-lg": ["Plus Jakarta Sans"],
+          "body-lg": ["Plus Jakarta Sans"],
+          "headline-md": ["Plus Jakarta Sans"],
+          "display-lg": ["Plus Jakarta Sans"],
+          "title-md": ["Plus Jakarta Sans"]
+        },
+        "fontSize": {
+          "body-sm": ["13px", { "lineHeight": "18px", "letterSpacing": "0em", "fontWeight": "400" }],
+          "label-sm": ["11px", { "lineHeight": "14px", "letterSpacing": "0.04em", "fontWeight": "600" }],
+          "body-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0em", "fontWeight": "400" }],
+          "headline-lg-mobile": ["26px", { "lineHeight": "34px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+          "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+          "headline-sm": ["18px", { "lineHeight": "26px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+          "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600" }],
+          "label-lg": ["14px", { "lineHeight": "20px", "letterSpacing": "0em", "fontWeight": "600" }],
+          "body-lg": ["16px", { "lineHeight": "24px", "letterSpacing": "0em", "fontWeight": "400" }],
+          "headline-md": ["22px", { "lineHeight": "30px", "letterSpacing": "-0.015em", "fontWeight": "600" }],
+          "display-lg": ["44px", { "lineHeight": "52px", "letterSpacing": "-0.03em", "fontWeight": "800" }],
+          "title-md": ["16px", { "lineHeight": "24px", "fontWeight": "600" }]
+        }
+      }
+    }
+  }
+</script></head><body class="bg-surface font-body-md text-on-surface antialiased"><aside class="fixed left-0 top-0 h-full w-[240px] bg-surface-container-low border-r border-outline-variant/30 z-50 flex flex-col justify-between p-4"><div class="flex flex-col"><div class="flex items-center gap-2 px-2 py-2"><span class="material-symbols-outlined text-primary text-[24px]">auto_awesome</span><div class="flex items-center text-headline-sm font-headline-sm"><span class="text-on-surface font-bold">Dream</span><span class="text-primary font-bold ml-0.5">Path</span></div></div><div class="bg-surface-container-lowest rounded-xl p-3 my-4 flex flex-col gap-2 border border-outline-variant/30"><div class="flex items-center gap-3"><div class="w-9 h-9 rounded-full bg-primary-fixed flex items-center justify-center text-on-primary-fixed font-title-md text-title-md shrink-0 font-bold">A</div><div class="min-w-0 flex-1"><p class="text-body-md font-title-md text-on-surface truncate font-semibold">Alex Rivera</p><p class="text-label-sm font-label-sm text-on-surface-variant truncate">Aurora Tier · Lv. 4</p></div></div></div><nav class="flex flex-col gap-1" data-active-classes="bg-primary-fixed text-on-primary-fixed font-bold rounded-xl"><a class="flex items-center px-3 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-label-md text-label-md" data-path="home" href="#"><span>Home</span></a><a class="flex items-center px-3 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-label-md text-label-md" data-path="explore" href="#"><span>Explore Careers</span></a><a aria-current="page" class="flex items-center px-3 py-2.5 transition-colors bg-primary-fixed text-on-primary-fixed font-bold rounded-xl" data-path="modes" href="#"><span>Practice</span></a><a class="flex items-center px-3 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-label-md text-label-md" data-path="leaderboard" href="#"><span>Leaderboard</span></a><a class="flex items-center px-3 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-label-md text-label-md" data-path="profile" href="#"><span>Profile</span></a></nav></div><div class="pt-4 border-t border-outline-variant/20"><nav class="flex flex-col" data-active-classes="bg-primary-fixed text-on-primary-fixed font-bold rounded-xl"><a class="flex items-center px-3 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-label-md text-label-md" data-path="settings" href="#"><span>Settings</span></a></nav></div></aside><div class="pl-[240px]"><header class="fixed top-0 left-[240px] right-0 h-16 bg-surface border-b border-outline-variant/30 z-40 px-8 flex items-center justify-between"><div class="flex items-center gap-4"><span class="text-headline-sm font-headline-sm text-on-surface">Good evening, Alex</span><div class="flex items-center gap-1 bg-surface-container-lowest border border-outline-variant/40 text-on-surface font-label-md text-label-md px-3 py-1.5 rounded-full cursor-pointer hover:bg-surface-container-low transition-colors"><span>Software Engineer</span><span class="material-symbols-outlined text-[16px]">arrow_drop_down</span></div></div><div class="flex items-center gap-3"><div class="relative"><button class="w-10 h-10 rounded-xl flex items-center justify-center text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors border border-outline-variant/30 bg-surface-container-lowest" title="Notifications &amp; Alerts"><span class="material-symbols-outlined text-[20px]">notifications</span></button><span class="absolute top-2 right-2 w-2 h-2 rounded-full bg-error ring-2 ring-surface-container-lowest"></span></div><div class="w-9 h-9 rounded-full bg-primary-fixed flex items-center justify-center shrink-0 ml-1 text-on-primary-fixed font-title-md text-title-md font-bold shadow-sm">A</div></div></header><main class="relative pt-16 w-full bg-surface min-h-screen px-space-lg py-space-lg"><div class="flex flex-col w-full">
+<div class="flex flex-col gap-8 pb-12">
+<!-- Top Strategic Banner: Header & Daily Cadence Tracker -->
+<div class="flex flex-col lg:flex-row lg:items-end justify-between gap-6 pt-2">
+<div class="flex flex-col gap-2 max-w-2xl">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+<span class="font-label-sm text-label-sm text-primary uppercase tracking-widest">Interactive Learning Hubs</span>
+</div>
+<h1 class="font-display-lg text-display-lg text-on-surface tracking-tight">Practice Modes &amp; Skill Labs</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant">
+          Learn foundational theory, test your knowledge in rapid quizzes, or run realistic workplace simulation scenarios.
+        </p>
+</div>
+<!-- Daily Target Tracker Card (Elevated pill) -->
+<div class="bg-surface-container-lowest border border-outline-variant/30 p-5 rounded-2xl shadow-sm flex flex-col gap-3 min-w-[320px] lg:w-96">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="p-1.5 rounded-lg bg-primary-fixed text-on-primary-fixed flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: &quot;FILL&quot; 1;">local_fire_department</span>
+</span>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Current Streak</span>
+<span class="font-title-md text-title-md text-on-surface font-bold">7 Days in a Row</span>
+</div>
+</div>
+<div class="text-right">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Daily Target</span>
+<p class="font-title-md text-title-md text-primary font-bold">180 <span class="font-body-sm text-body-sm text-on-surface-variant">/ 250 XP</span></p>
+</div>
+</div>
+<!-- Progress Gauge -->
+<div class="w-full bg-surface-container-high h-2.5 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full transition-all duration-700 ease-out" style="width: 72%;"></div>
+</div>
+<div class="flex items-center justify-between text-on-surface-variant">
+<span class="font-label-sm text-label-sm">72% Completed Today</span>
+<span class="font-label-sm text-label-sm text-primary font-bold">+70 XP needed</span>
+</div>
+</div>
+</div>
+<!-- The 3 Primary Game Modes (Hero 3-Card Interactive Grid) -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+<!-- MODE 1: Study Mode -->
+<div class="group relative bg-surface-container-lowest border border-outline-variant/30 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between overflow-hidden">
+<div class="absolute -right-12 -top-12 w-36 h-36 bg-primary-fixed/30 rounded-full blur-2xl group-hover:bg-primary-fixed/50 transition-colors pointer-events-none"></div>
+<div class="flex flex-col gap-5 relative z-10">
+<div class="flex items-start justify-between">
+<div class="w-14 h-14 rounded-xl bg-primary-fixed flex items-center justify-center text-on-primary-fixed group-hover:scale-105 transition-transform">
+<span class="material-symbols-outlined text-[28px]" style="font-variation-settings: &quot;FILL&quot; 1;">menu_book</span>
+</div>
+<span class="px-3 py-1 bg-primary-fixed/60 text-on-primary-fixed rounded-full font-label-sm text-label-sm font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">bolt</span>
+              +20 XP / Lesson
+            </span>
+</div>
+<div class="flex flex-col gap-1.5">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Theory &amp; Context</span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Study Mode</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">
+              Read bite-sized lessons, explore interactive industry terminology, and listen to AI read-aloud explanations.
+            </p>
+</div>
+<!-- Highlight Capsule -->
+<div class="bg-surface-container-low p-4 rounded-xl flex flex-col gap-2">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-on-surface-variant font-bold">Active Module</span>
+<span class="font-label-sm text-label-sm text-primary font-bold">Lesson 4 of 12</span>
+</div>
+<p class="font-title-md text-title-md text-on-surface line-clamp-1">Software Engineering: Clean Code</p>
+<div class="w-full bg-surface-container-highest h-1.5 rounded-full overflow-hidden mt-1">
+<div class="bg-primary h-full rounded-full" style="width: 33%;"></div>
+</div>
+</div>
+</div>
+<div class="mt-6 relative z-10">
+<button class="w-full py-3.5 px-4 bg-primary-fixed text-on-primary-fixed rounded-xl font-title-md text-title-md font-semibold hover:bg-primary-container transition-all flex items-center justify-center gap-2 group-hover:gap-3">
+<span>Read Interactive Notes</span>
+<span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- MODE 2: Quiz Mode -->
+<div class="group relative bg-surface-container-lowest border border-outline-variant/30 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between overflow-hidden">
+<div class="absolute -right-12 -top-12 w-36 h-36 bg-secondary-fixed/30 rounded-full blur-2xl group-hover:bg-secondary-fixed/50 transition-colors pointer-events-none"></div>
+<div class="flex flex-col gap-5 relative z-10">
+<div class="flex items-start justify-between">
+<div class="w-14 h-14 rounded-xl bg-secondary-fixed flex items-center justify-center text-on-secondary-fixed group-hover:scale-105 transition-transform">
+<span class="material-symbols-outlined text-[28px]" style="font-variation-settings: &quot;FILL&quot; 1;">quiz</span>
+</div>
+<span class="px-3 py-1 bg-secondary-fixed/60 text-on-secondary-fixed rounded-full font-label-sm text-label-sm font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">timer</span>
+              Timed · +40 XP
+            </span>
+</div>
+<div class="flex flex-col gap-1.5">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Knowledge Checkpoint</span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Quiz Mode</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">
+              Fast-paced multiple choice checks tailored to the Aurora educational tier (Ages 10-12 / Upper Primary).
+            </p>
+</div>
+<!-- Highlight Capsule -->
+<div class="bg-surface-container-low p-4 rounded-xl flex flex-col gap-2">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-on-surface-variant font-bold">Current Challenge</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[14px] text-amber-500" style="font-variation-settings: &quot;FILL&quot; 1;">star</span>
+<span class="material-symbols-outlined text-[14px] text-amber-500" style="font-variation-settings: &quot;FILL&quot; 1;">star</span>
+<span class="material-symbols-outlined text-[14px] text-amber-500" style="font-variation-settings: &quot;FILL&quot; 1;">star</span>
+</span>
+</div>
+<p class="font-title-md text-title-md text-on-surface line-clamp-1">Frontend Debugging &amp; DOM Layout</p>
+<div class="flex items-center justify-between text-body-sm font-body-sm text-on-surface-variant mt-1">
+<span>Best Accuracy</span>
+<span class="font-semibold text-secondary">96% High Score</span>
+</div>
+</div>
+</div>
+<div class="mt-6 relative z-10">
+<button class="w-full py-3.5 px-4 bg-secondary-fixed text-on-secondary-fixed rounded-xl font-title-md text-title-md font-semibold hover:bg-secondary-container transition-all flex items-center justify-center gap-2 group-hover:gap-3">
+<span>Start Quiz Challenge</span>
+<span class="material-symbols-outlined text-[18px]">play_arrow</span>
+</button>
+</div>
+</div>
+<!-- MODE 3: Simulation Mode -->
+<div class="group relative bg-surface-container-lowest border border-outline-variant/30 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between overflow-hidden">
+<div class="absolute -right-12 -top-12 w-36 h-36 bg-tertiary-fixed/30 rounded-full blur-2xl group-hover:bg-tertiary-fixed/50 transition-colors pointer-events-none"></div>
+<div class="flex flex-col gap-5 relative z-10">
+<div class="flex items-start justify-between">
+<div class="w-14 h-14 rounded-xl bg-tertiary-fixed flex items-center justify-center text-on-tertiary-fixed group-hover:scale-105 transition-transform">
+<span class="material-symbols-outlined text-[28px]" style="font-variation-settings: &quot;FILL&quot; 1;">smart_toy</span>
+</div>
+<span class="px-3 py-1 bg-tertiary-fixed/60 text-on-tertiary-fixed rounded-full font-label-sm text-label-sm font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">psychology</span>
+              Workplace · +80 XP
+            </span>
+</div>
+<div class="flex flex-col gap-1.5">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Branching Narrative</span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Simulation Mode</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">
+              Step into real scenarios guided by Mentor Maya. Make decisions that affect your virtual project outcomes.
+            </p>
+</div>
+<!-- Highlight Capsule -->
+<div class="bg-surface-container-low p-4 rounded-xl flex flex-col gap-2">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-on-surface-variant font-bold">Scenario #42</span>
+<span class="px-2 py-0.5 rounded-full bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm">Active</span>
+</div>
+<p class="font-title-md text-title-md text-on-surface line-clamp-1">The Disappearing Checkout Button</p>
+<div class="flex items-center gap-2 mt-1">
+<div class="w-5 h-5 rounded-full bg-tertiary-fixed flex items-center justify-center text-on-tertiary-fixed text-[10px] font-bold">M</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Mentor Maya is waiting for review</span>
+</div>
+</div>
+</div>
+<div class="mt-6 relative z-10">
+<button class="w-full py-3.5 px-4 bg-primary-fixed text-on-primary-fixed rounded-xl font-title-md text-title-md font-semibold hover:bg-primary-container transition-all flex items-center justify-center gap-2 group-hover:gap-3">
+<span>Launch Simulation</span>
+<span class="material-symbols-outlined text-[18px]">terminal</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Bottom Contextual Strip: Mastered Skills & Upcoming Milestones -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+<!-- Left Column (7 cols): Recently Mastered Skills -->
+<div class="lg:col-span-7 bg-surface-container-lowest border border-outline-variant/30 rounded-2xl p-6 shadow-sm flex flex-col justify-between">
+<div class="flex flex-col gap-4">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-primary text-[22px]">verified</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Recently Mastered Skills</h3>
+</div>
+<a class="font-label-md text-label-md text-primary hover:underline flex items-center gap-0.5" href="#">
+              Skill Tree <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+</a>
+</div>
+<div class="flex flex-col gap-3 mt-1">
+<!-- Skill 1 -->
+<div class="p-3.5 rounded-xl bg-surface-container-low hover:bg-surface-container transition-colors flex items-center justify-between gap-4">
+<div class="flex items-center gap-3 min-w-0">
+<div class="w-8 h-8 rounded-lg bg-secondary-fixed flex items-center justify-center text-on-secondary-fixed shrink-0">
+<span class="material-symbols-outlined text-[18px]">check</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-title-md text-title-md text-on-surface truncate">HTML/CSS Box Model</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Validated in Quiz #18 • 100% Mastery</span>
+</div>
+</div>
+<div class="flex items-center gap-3 shrink-0">
+<span class="px-2.5 py-1 bg-secondary-fixed text-on-secondary-fixed rounded-md font-label-sm text-label-sm font-bold">100%</span>
+</div>
+</div>
+<!-- Skill 2 -->
+<div class="p-3.5 rounded-xl bg-surface-container-low hover:bg-surface-container transition-colors flex items-center justify-between gap-4">
+<div class="flex items-center gap-3 min-w-0">
+<div class="w-8 h-8 rounded-lg bg-primary-fixed flex items-center justify-center text-on-primary-fixed shrink-0">
+<span class="material-symbols-outlined text-[18px]">code</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-title-md text-title-md text-on-surface truncate">Git Branching &amp; Pull Requests</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Validated in Simulation #39 • Advanced</span>
+</div>
+</div>
+<div class="flex items-center gap-3 shrink-0">
+<span class="px-2.5 py-1 bg-primary-fixed text-on-primary-fixed rounded-md font-label-sm text-label-sm font-bold">85%</span>
+</div>
+</div>
+<!-- Skill 3 -->
+<div class="p-3.5 rounded-xl bg-surface-container-low hover:bg-surface-container transition-colors flex items-center justify-between gap-4">
+<div class="flex items-center gap-3 min-w-0">
+<div class="w-8 h-8 rounded-lg bg-tertiary-fixed flex items-center justify-center text-on-tertiary-fixed shrink-0">
+<span class="material-symbols-outlined text-[18px]">data_object</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-title-md text-title-md text-on-surface truncate">JavaScript Functions &amp; Scope</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Validated in Study Lab #04 • Intermediate</span>
+</div>
+</div>
+<div class="flex items-center gap-3 shrink-0">
+<span class="px-2.5 py-1 bg-surface-container-highest text-on-surface-variant rounded-md font-label-sm text-label-sm font-bold">60%</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column (5 cols): Upcoming Milestones & Quest Hub -->
+<div class="lg:col-span-5 bg-surface-container-lowest border border-outline-variant/30 rounded-2xl p-6 shadow-sm flex flex-col justify-between">
+<div class="flex flex-col gap-4">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-primary text-[22px]">military_tech</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Upcoming Milestone</h3>
+</div>
+<span class="px-2.5 py-1 rounded-full bg-primary-fixed text-on-primary-fixed font-label-sm text-label-sm font-bold">Aurora Rank</span>
+</div>
+<div class="bg-surface-container-low p-4 rounded-xl flex flex-col gap-3">
+<div class="flex items-start justify-between">
+<div>
+<p class="font-title-md text-title-md text-on-surface font-bold">Aurora Rank Certification</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Required for Junior Apprentice Badging</p>
+</div>
+<span class="material-symbols-outlined text-[24px] text-primary">workspace_premium</span>
+</div>
+<!-- Milestone Progress Bar -->
+<div class="flex flex-col gap-1.5 mt-1">
+<div class="flex justify-between font-label-sm text-label-sm">
+<span class="text-on-surface-variant">XP Progress</span>
+<span class="text-on-surface font-bold">1,120 / 1,500 XP</span>
+</div>
+<div class="w-full bg-surface-container-highest h-2 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 74%;"></div>
+</div>
+</div>
+<p class="font-label-sm text-label-sm text-on-surface-variant italic">
+              Tip: Complete 1 simulation or 2 quizzes today to level up to Lv. 5.
+            </p>
+</div>
+<!-- Quick Quest mini card -->
+<div class="p-3.5 rounded-xl bg-surface-container-low flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-primary-fixed flex items-center justify-center text-on-primary-fixed font-bold text-label-sm">
+                Q1
+              </div>
+<div class="flex flex-col">
+<span class="font-title-md text-title-md text-on-surface">Weekly Lab Challenge</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Complete 3 timed quizzes (2/3 done)</span>
+</div>
+</div>
+<span class="font-label-sm text-label-sm text-primary font-bold">+100 XP</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div></main></div>
+
+
+</body></html>

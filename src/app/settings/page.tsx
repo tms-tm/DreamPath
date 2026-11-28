@@ -1,199 +1,305 @@
 'use client';
 
-import React from 'react';
-import {
-  Volume2,
-  VolumeX,
-  Sparkles,
-  Shield,
-  Layers,
-  CheckCircle2
-} from 'lucide-react';
+import React, { useState } from 'react';
 import { useProgressionStore } from '@/stores/useProgressionStore';
 import { EDUCATION_TIERS, TierId } from '@/types/career';
-import { speakText, stopSpeaking } from '@/utils/sound';
 
 export default function SettingsPage() {
-  const { profile, setSettings, setEducationTier } = useProgressionStore();
+  const { profile, updateProfile, setSettings } = useProgressionStore();
 
-  const handleReadAloudToggle = () => {
-    const nextVal = !profile.readAloudEnabled;
-    setSettings({ readAloudEnabled: nextVal });
-    if (nextVal) {
-      speakText('Voice assistance enabled.');
-    } else {
-      stopSpeaking();
-    }
+  const [showStagePicker, setShowStagePicker] = useState(false);
+  const [showPersonalInfo, setShowPersonalInfo] = useState(false);
+  const [soundEffects, setSoundEffects] = useState(true);
+  const [reduceMotion, setReduceMotion] = useState(false);
+  const [savedNotice, setSavedNotice] = useState<string | null>(null);
+
+  const currentTier = EDUCATION_TIERS[profile.educationTier] || EDUCATION_TIERS.galaxy;
+
+  const handleSelectTier = (tierId: TierId) => {
+    updateProfile({ educationTier: tierId });
+    setSavedNotice(`Switched stage to ${EDUCATION_TIERS[tierId]?.name} Tier`);
+    setTimeout(() => setSavedNotice(null), 3000);
   };
 
-  const handleSoundEffectsToggle = () => {
-    setSettings({ soundEffectsEnabled: !profile.soundEffectsEnabled });
+  const handleAudioNarrationToggle = (enabled: boolean) => {
+    setSettings({ readAloudEnabled: enabled });
   };
-
-  const handleReduceMotionToggle = () => {
-    setSettings({ reduceMotion: !profile.reduceMotion });
-  };
-
-  const tiersList: TierId[] = ['moonrise', 'starlight', 'aurora', 'nebula', 'galaxy'];
 
   return (
-    <div className="space-y-8 max-w-5xl mx-auto">
+    <div className="max-w-4xl w-full mx-auto py-2 space-y-6 animate-fade-in pb-16">
       {/* Header */}
-      <div>
-        <div className="text-xs font-bold uppercase tracking-wider text-indigo-400">
-          PREFERENCES
-        </div>
-        <h1 className="text-3xl font-extrabold text-white tracking-tight mt-1">
-          Settings
-        </h1>
-        <p className="mt-2 text-slate-300 text-sm max-w-2xl leading-relaxed">
-          Make DreamPath comfortable, accessible, and safe for you.
-        </p>
-      </div>
-
-      {/* 2-Column Grid matching Figma settings screenshot */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Left Column: Learning Experience toggles */}
-        <div className="p-6 sm:p-8 rounded-3xl bg-[#0e1224] border border-[#1e233d] space-y-4">
-          <h3 className="text-base font-bold text-white mb-2">Learning experience</h3>
-
-          {/* Read questions aloud */}
-          <div className="p-4 rounded-2xl bg-[#141830] border border-[#212850] flex items-center justify-between">
-            <div>
-              <div className="text-sm font-bold text-white">Read questions aloud</div>
-              <div className="text-xs text-slate-400">Hear instructions and important clues</div>
-            </div>
-            <button
-              onClick={handleReadAloudToggle}
-              className={`w-12 h-6 rounded-full transition-colors relative p-1 ${
-                profile.readAloudEnabled ? 'bg-indigo-600' : 'bg-slate-700'
-              }`}
-            >
-              <div
-                className={`w-4 h-4 rounded-full bg-white transition-transform ${
-                  profile.readAloudEnabled ? 'translate-x-6' : 'translate-x-0'
-                }`}
-              />
-            </button>
-          </div>
-
-          {/* Sound effects */}
-          <div className="p-4 rounded-2xl bg-[#141830] border border-[#212850] flex items-center justify-between">
-            <div>
-              <div className="text-sm font-bold text-white">Sound effects</div>
-              <div className="text-xs text-slate-400">Mission feedback and celebration sounds</div>
-            </div>
-            <button
-              onClick={handleSoundEffectsToggle}
-              className={`w-12 h-6 rounded-full transition-colors relative p-1 ${
-                profile.soundEffectsEnabled ? 'bg-indigo-600' : 'bg-slate-700'
-              }`}
-            >
-              <div
-                className={`w-4 h-4 rounded-full bg-white transition-transform ${
-                  profile.soundEffectsEnabled ? 'translate-x-6' : 'translate-x-0'
-                }`}
-              />
-            </button>
-          </div>
-
-          {/* Reduce motion */}
-          <div className="p-4 rounded-2xl bg-[#141830] border border-[#212850] flex items-center justify-between">
-            <div>
-              <div className="text-sm font-bold text-white">Reduce motion</div>
-              <div className="text-xs text-slate-400">Use fewer animations and transitions</div>
-            </div>
-            <button
-              onClick={handleReduceMotionToggle}
-              className={`w-12 h-6 rounded-full transition-colors relative p-1 ${
-                profile.reduceMotion ? 'bg-indigo-600' : 'bg-slate-700'
-              }`}
-            >
-              <div
-                className={`w-4 h-4 rounded-full bg-white transition-transform ${
-                  profile.reduceMotion ? 'translate-x-6' : 'translate-x-0'
-                }`}
-              />
-            </button>
-          </div>
-        </div>
-
-        {/* Right Column: Account & Safety items */}
-        <div className="p-6 sm:p-8 rounded-3xl bg-[#0e1224] border border-[#1e233d] space-y-4">
-          <h3 className="text-base font-bold text-white mb-2">Account & safety</h3>
-
-          <div className="p-4 rounded-2xl bg-[#141830] border border-[#212850] flex items-center justify-between">
-            <div>
-              <div className="text-sm font-bold text-white">Personal information</div>
-              <div className="text-xs text-slate-400">Name, age, education level</div>
-            </div>
-            <span className="text-xs font-semibold text-indigo-400">View</span>
-          </div>
-
-          <div className="p-4 rounded-2xl bg-[#141830] border border-[#212850] flex items-center justify-between">
-            <div>
-              <div className="text-sm font-bold text-white">Parent connection</div>
-              <div className="text-xs text-slate-400">{profile.parentName} • Verified</div>
-            </div>
-            <span className="text-xs font-semibold text-emerald-400">Active</span>
-          </div>
-
-          <div className="p-4 rounded-2xl bg-[#141830] border border-[#212850] flex items-center justify-between">
-            <div>
-              <div className="text-sm font-bold text-white">Screen time</div>
-              <div className="text-xs text-slate-400">{profile.screenTimeMaxMinutes} minute daily limit</div>
-            </div>
-            <span className="text-xs font-semibold text-amber-400">Configured</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Educational Tier Framework Switcher from SPEC.md */}
-      <div className="p-6 sm:p-8 rounded-3xl bg-[#0e1224] border border-[#1e233d] space-y-4">
+      <div className="flex items-center justify-between">
         <div>
-          <div className="text-xs font-bold uppercase tracking-wider text-indigo-400">
-            PEDAGOGICAL FRAMEWORK
-          </div>
-          <h3 className="text-xl font-bold text-white mt-1">
-            Educational Tier Switcher (5 Tiers from SPEC.md)
-          </h3>
-          <p className="mt-1 text-xs text-slate-400">
-            Adapts vocabulary, UI tap targets, quiz questions count, and XP multipliers.
+          <h1 className="text-3xl font-bold tracking-tight text-[#1b1c18]">Settings</h1>
+          <p className="text-xs text-[#43474c] mt-1">
+            Manage your learning journey stage, accessibility preferences, and student profile.
           </p>
         </div>
+        {savedNotice && (
+          <div className="px-3 py-1.5 rounded-lg bg-[#d3e8da] text-[#002113] text-xs font-semibold flex items-center gap-1.5 animate-fade-in">
+            <span className="material-symbols-outlined text-[16px]">check_circle</span>
+            <span>{savedNotice}</span>
+          </div>
+        )}
+      </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 pt-2">
-          {tiersList.map((tierKey) => {
-            const t = EDUCATION_TIERS[tierKey];
-            const isSelected = profile.educationTier === tierKey;
-            return (
-              <button
-                key={tierKey}
-                onClick={() => setEducationTier(tierKey)}
-                className={`p-4 rounded-2xl border text-left transition-all flex flex-col justify-between ${
-                  isSelected
-                    ? 'border-indigo-500 bg-indigo-600/20 ring-1 ring-indigo-500 text-white'
-                    : 'bg-[#141830] border-[#20274e] text-slate-300 hover:bg-[#1a2040]'
-                }`}
-              >
+      <div className="space-y-6">
+        {/* Section 1: Learning Journey Stage */}
+        <section className="bg-[#ffffff] rounded-xl p-5 border border-[#e4e2dc] shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-base font-semibold text-[#1b1c18]">Learning Journey Stage</h2>
+          </div>
+
+          <div className="flex items-center justify-between py-1">
+            <div className="flex items-center gap-3.5">
+              <div className="w-9 h-9 rounded-lg bg-[#cfe2fa] text-[#091d2e] flex items-center justify-center shrink-0">
+                <span className="material-symbols-outlined text-[20px]">explore</span>
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-bold text-[#1b1c18]">{currentTier.name} Tier</span>
+                  <span className="text-xs font-semibold text-[#091d2e] bg-[#cfe2fa] px-2 py-0.5 rounded-full">
+                    Lv. {currentTier.id === 'moonrise' ? '1' : currentTier.id === 'starlight' ? '2' : currentTier.id === 'aurora' ? '3' : currentTier.id === 'nebula' ? '4' : '5'}
+                  </span>
+                </div>
+                <p className="text-xs text-[#43474c] mt-0.5">
+                  Ages {currentTier.targetAge} ({currentTier.phase}) · Advanced career tracks &amp; mentor access
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setShowStagePicker(!showStagePicker)}
+              className="bg-[#cfe2fa] hover:bg-[#b5c8e0] text-[#091d2e] rounded-full px-4 py-2 text-xs font-bold leading-none tracking-[-0.01em] active:scale-[0.95] transition-all border-0 cursor-pointer shadow-xs"
+            >
+              {showStagePicker ? 'Hide Options' : 'Change Configuration'}
+            </button>
+          </div>
+
+          {/* Expandable Stage Selection Grid */}
+          {showStagePicker && (
+            <div className="mt-4 pt-4 border-t border-[#e4e2dc] animate-fade-in">
+              <p className="text-xs font-medium text-[#43474c] mb-3">Select Learning Stage</p>
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
+                {[
+                  { id: 'moonrise', lv: 'Lv. 1', name: 'Moonrise', age: '4–6 yrs' },
+                  { id: 'starlight', lv: 'Lv. 2', name: 'Starlight', age: '7–9 yrs' },
+                  { id: 'aurora', lv: 'Lv. 3', name: 'Aurora', age: '10–12 yrs' },
+                  { id: 'nebula', lv: 'Lv. 4', name: 'Nebula', age: '13–15 yrs' },
+                  { id: 'galaxy', lv: 'Lv. 5', name: 'Galaxy', age: '16–18+ yrs' },
+                ].map((tier) => {
+                  const isSelected = profile.educationTier === tier.id;
+                  return (
+                    <button
+                      key={tier.id}
+                      type="button"
+                      onClick={() => handleSelectTier(tier.id as TierId)}
+                      className={`rounded-lg p-2.5 text-left transition ${
+                        isSelected
+                          ? 'border border-[#4e6074] bg-[#cfe2fa]/50 ring-1 ring-[#4e6074]/30'
+                          : 'border border-[#e4e2dc] hover:border-[#4e6074]/50 bg-[#ffffff]'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between text-[11px] font-semibold text-[#091d2e]">
+                        <span>{tier.lv}</span>
+                        {isSelected && (
+                          <span className="material-symbols-outlined text-[14px] text-[#4e6074]">
+                            check
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-xs font-semibold text-[#1b1c18] mt-1">{tier.name}</div>
+                      <div className="text-[11px] text-[#43474c]">{tier.age}</div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </section>
+
+        {/* Section 2: Learning Experience & Accessibility */}
+        <section className="bg-[#ffffff] rounded-xl p-5 border border-[#e4e2dc] shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
+          <div className="mb-2">
+            <h2 className="text-base font-semibold text-[#1b1c18]">
+              Learning Experience &amp; Accessibility
+            </h2>
+          </div>
+
+          <div className="divide-y divide-[#e4e2dc]">
+            {/* Read questions aloud */}
+            <div className="flex items-center justify-between py-3.5">
+              <div className="flex items-center gap-3.5">
+                <div className="w-9 h-9 rounded-lg bg-[#cfe2fa] text-[#091d2e] flex items-center justify-center shrink-0">
+                  <span className="material-symbols-outlined text-[20px]">volume_up</span>
+                </div>
                 <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-extrabold">{t.name}</span>
-                    {isSelected && <CheckCircle2 className="w-4 h-4 text-indigo-400" />}
-                  </div>
-                  <div className="text-[11px] text-slate-400">{t.gradeDesc}</div>
-                  <div className="text-[10px] text-indigo-300 font-semibold">{t.targetAge}</div>
+                  <span className="text-sm font-medium text-[#1b1c18] block">Read questions aloud</span>
+                  <span className="text-xs text-[#43474c] mt-0.5 block">
+                    Audio narration for quiz questions and missions
+                  </span>
                 </div>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={profile.readAloudEnabled}
+                  onChange={(e) => handleAudioNarrationToggle(e.target.checked)}
+                  className="sr-only peer"
+                />
+                <div className="w-9 h-5 bg-[#e4e2dc] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-4 peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-[#e4e2dc] after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#4e6074]"></div>
+              </label>
+            </div>
 
-                <div className="mt-4 pt-2 border-t border-[#1e2447] text-[10px] text-slate-400">
-                  Phase: <strong className="text-white">{t.phase}</strong>
+            {/* Sound effects */}
+            <div className="flex items-center justify-between py-3.5">
+              <div className="flex items-center gap-3.5">
+                <div className="w-9 h-9 rounded-lg bg-[#f3dae7] text-[#53424c] flex items-center justify-center shrink-0">
+                  <span className="material-symbols-outlined text-[20px]">music_note</span>
                 </div>
+                <div>
+                  <span className="text-sm font-medium text-[#1b1c18] block">Sound effects</span>
+                  <span className="text-xs text-[#43474c] mt-0.5 block">
+                    Audio feedback on completed activities and milestones
+                  </span>
+                </div>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={soundEffects}
+                  onChange={(e) => setSoundEffects(e.target.checked)}
+                  className="sr-only peer"
+                />
+                <div className="w-9 h-5 bg-[#e4e2dc] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-4 peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-[#e4e2dc] after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#4e6074]"></div>
+              </label>
+            </div>
+
+            {/* Reduce motion */}
+            <div className="flex items-center justify-between py-3.5">
+              <div className="flex items-center gap-3.5">
+                <div className="w-9 h-9 rounded-lg bg-[#d3e8da] text-[#394b41] flex items-center justify-center shrink-0">
+                  <span className="material-symbols-outlined text-[20px]">air</span>
+                </div>
+                <div>
+                  <span className="text-sm font-medium text-[#1b1c18] block">Reduce motion</span>
+                  <span className="text-xs text-[#43474c] mt-0.5 block">
+                    Minimize interface transitions and effects
+                  </span>
+                </div>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={reduceMotion}
+                  onChange={(e) => setReduceMotion(e.target.checked)}
+                  className="sr-only peer"
+                />
+                <div className="w-9 h-5 bg-[#e4e2dc] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-4 peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-[#e4e2dc] after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#4e6074]"></div>
+              </label>
+            </div>
+          </div>
+        </section>
+
+        {/* Section 3: Account & Security */}
+        <section className="bg-[#ffffff] rounded-xl p-5 border border-[#e4e2dc] shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-base font-semibold text-[#1b1c18]">Account &amp; Security</h2>
+          </div>
+
+          <div className="border border-[#e4e2dc] rounded-xl bg-[#f6f4ed] divide-y divide-[#e4e2dc] overflow-hidden">
+            {/* Row 1: Student Identity */}
+            <div className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3.5">
+                  <div className="w-9 h-9 rounded-xl bg-[#d3e8da] text-[#394b41] flex items-center justify-center shrink-0">
+                    <span className="material-symbols-outlined text-[18px]">verified_user</span>
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium text-[#1b1c18]">Student Identity</span>
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-[#d3e8da] text-[#394b41] border border-[#b7cbbe]">
+                        <span className="material-symbols-outlined text-[13px]">check</span>
+                        Verified
+                      </span>
+                    </div>
+                    <p className="text-xs text-[#43474c] mt-0.5">
+                      Personal verification &amp; student status
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowPersonalInfo(!showPersonalInfo)}
+                  className="bg-[#eae8e1] hover:bg-[#e4e2dc] text-[#1b1c18] border border-[#c4c6cd]/60 h-[34px] px-3.5 rounded-[10px] text-xs font-semibold tracking-[-0.01em] transition-all inline-flex items-center justify-center cursor-pointer"
+                >
+                  {showPersonalInfo ? 'Hide' : 'View'}
+                </button>
+              </div>
+
+              {showPersonalInfo && (
+                <div className="mt-3 pt-3 border-t border-[#e4e2dc] text-xs space-y-1.5 animate-fade-in">
+                  <div className="flex justify-between items-center">
+                    <span className="text-[#43474c]">Full Name:</span>
+                    <span className="font-medium text-[#1b1c18]">{profile.name}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-[#43474c]">Age:</span>
+                    <span className="font-medium text-[#1b1c18]">17</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-[#43474c]">School / Academy:</span>
+                    <span className="font-medium text-[#1b1c18]">SMK Bandar Utama Damansara</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-[#43474c]">Education Level:</span>
+                    <span className="font-medium text-[#1b1c18]">
+                      Upper Secondary ({currentTier.name} Tier)
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Row 2: Account & Password */}
+            <div className="p-4 flex items-center justify-between">
+              <div className="flex items-center gap-3.5">
+                <div className="w-9 h-9 rounded-xl bg-[#eae8e1] text-[#43474c] flex items-center justify-center shrink-0">
+                  <span className="material-symbols-outlined text-[18px]">lock</span>
+                </div>
+                <div>
+                  <span className="text-sm font-medium text-[#1b1c18] block">Account &amp; Password</span>
+                  <p className="text-xs text-[#43474c] mt-0.5">alex.rivera@example.com</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                className="bg-[#eae8e1] hover:bg-[#e4e2dc] text-[#1b1c18] border border-[#c4c6cd]/60 h-[34px] px-3.5 rounded-[10px] text-xs font-semibold tracking-[-0.01em] transition-all inline-flex items-center justify-center cursor-pointer"
+              >
+                Change Password
               </button>
-            );
-          })}
-        </div>
+            </div>
+
+            {/* Row 3: Edit / Sign Out */}
+            <div className="px-4 py-3.5 flex items-center justify-between border-t border-[#e4e2dc]">
+              <button
+                type="button"
+                className="bg-[#eae8e1] hover:bg-[#e4e2dc] text-[#1b1c18] border border-[#c4c6cd]/60 h-[34px] px-3.5 rounded-[10px] text-xs font-semibold tracking-[-0.01em] transition-all inline-flex items-center justify-center cursor-pointer"
+              >
+                Edit
+              </button>
+              <button
+                type="button"
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#ba1a1a] hover:underline cursor-pointer bg-transparent border-0 p-0"
+              >
+                <span className="material-symbols-outlined text-[16px]">logout</span>
+                <span>Sign Out</span>
+              </button>
+            </div>
+          </div>
+        </section>
       </div>
     </div>
   );
 }
-
