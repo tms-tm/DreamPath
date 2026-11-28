@@ -1,34 +1,89 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Trophy, Wallet } from 'lucide-react';
 import { Badge, Button, Card, PageHeader } from '@/components/ui';
 import { CAREERS, getCareerById } from '@/content/careers';
 import { LEADERBOARD_ENTRIES, type LeaderboardEntry } from '@/data/leaderboard';
+import { useProfileStore } from '@/features/profile/useProfileStore';
 import { useProgressionStore } from '@/features/progression/useProgressionStore';
+import { createSupabaseBrowserClient, isSupabaseConfigured } from '@/lib/supabase/client';
 
 export function LeaderboardView() {
-  const { profile, totalXp, simulatedSalary } = useProgressionStore();
+  const { totalXp, simulatedSalary } = useProgressionStore();
+  const { nickname, avatarChar, activeCareerId, leaderboardOptIn } = useProfileStore();
   const [selectedCareerId, setSelectedCareerId] = useState<string>('all');
+  const [remoteEntries, setRemoteEntries] = useState<LeaderboardEntry[] | null>(null);
+
+  useEffect(() => {
+    if (!isSupabaseConfigured()) return;
+    const supabase = createSupabaseBrowserClient();
+    if (!supabase) return;
+
+    let active = true;
+    supabase
+      .from('public_leaderboard')
+      .select('username, avatar_char, total_xp, simulated_salary, active_career_id')
+      .order('total_xp', { ascending: false })
+      .limit(50)
+      .then(({ data, error }) => {
+        if (!active || error || !data || data.length === 0) return;
+        setRemoteEntries(
+          data.map((row) => ({
+            username: row.username,
+            avatarChar: row.avatar_char,
+            totalXp: row.total_xp,
+            simulatedSalary: row.simulated_salary,
+            activeCareerId: row.active_career_id,
+          }))
+        );
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [leaderboardOptIn]);
 
   const rankedEntries = useMemo(() => {
-    const currentUserEntry: LeaderboardEntry = {
-      username: profile.handle || profile.name,
-      avatarChar: profile.avatarChar || 'D',
-      totalXp,
-      simulatedSalary,
-      activeCareerId: profile.activeCareerId,
-      isCurrentUser: true,
-    };
+    const baseEntries = remoteEntries ?? LEADERBOARD_ENTRIES;
+    const alreadyInRemote =
+      remoteEntries?.some((entry) => entry.username === nickname) ?? false;
 
-    const combined = [...LEADERBOARD_ENTRIES, currentUserEntry];
+    const shouldShowLocalRow = !alreadyInRemote && (leaderboardOptIn || !remoteEntries);
+    const currentUserEntry: LeaderboardEntry | null = shouldShowLocalRow
+      ? {
+          username: nickname,
+          avatarChar: avatarChar || 'D',
+          totalXp,
+          simulatedSalary,
+          activeCareerId,
+          isCurrentUser: true,
+        }
+      : null;
+
+    const combined = baseEntries.map((entry) =>
+      entry.username === nickname ? { ...entry, isCurrentUser: true } : entry
+    );
+    if (currentUserEntry) {
+      combined.push(currentUserEntry);
+    }
+
     const filtered =
       selectedCareerId === 'all'
         ? combined
         : combined.filter((entry) => entry.activeCareerId === selectedCareerId);
 
     return filtered.sort((a, b) => b.totalXp - a.totalXp);
-  }, [profile.handle, profile.name, profile.avatarChar, profile.activeCareerId, totalXp, simulatedSalary, selectedCareerId]);
+  }, [
+    remoteEntries,
+    nickname,
+    avatarChar,
+    activeCareerId,
+    leaderboardOptIn,
+    totalXp,
+    simulatedSalary,
+    selectedCareerId,
+  ]);
 
   const userRank = rankedEntries.findIndex((e) => e.isCurrentUser) + 1;
 
@@ -48,7 +103,7 @@ export function LeaderboardView() {
               Your Current Rank
             </span>
             <p className="text-2xl font-bold text-on-surface mt-0.5">
-              {userRank > 0 ? `#${userRank}` : '—'}
+              {userRank > 0 ? `#${userRank}` : 'Private'}
             </p>
           </div>
           <div className="w-11 h-11 rounded-xl bg-primary-container text-on-primary-fixed flex items-center justify-center">

@@ -4,23 +4,27 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowRight, ShieldCheck, Sparkles, UserCheck } from 'lucide-react';
 import { Button, Card } from '@/components/ui';
+import { signInDemoStudent, signInStudent, signUpStudent } from '@/features/auth/authActions';
 import { OnboardingShell } from '@/features/onboarding/OnboardingShell';
 import { useOnboardingDraft } from '@/features/onboarding/useOnboardingDraft';
+import { useProfileStore } from '@/features/profile/useProfileStore';
 import { useProgressionStore } from '@/features/progression/useProgressionStore';
 
 export function EntryView() {
   const router = useRouter();
   const { setAuthDraft, loadDemoStudent } = useOnboardingDraft();
-  const { updateProfile } = useProgressionStore();
+  const { updateProfile: updateProgressionProfile } = useProgressionStore();
+  const { updateProfile } = useProfileStore();
 
   const [tab, setTab] = useState<'signin' | 'register'>('register');
   const [nickname, setNickname] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [consentChecked, setConsentChecked] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
@@ -39,32 +43,69 @@ export function EntryView() {
         return;
       }
 
+      setSubmitting(true);
       const timestamp = new Date().toISOString();
-      setAuthDraft({ nickname: nickname.trim(), consentAcceptedAt: timestamp });
-      updateProfile({
-        name: nickname.trim(),
-        avatarChar: nickname.trim().charAt(0).toUpperCase() || 'D',
+      const result = await signUpStudent({
+        nickname: nickname.trim(),
+        email: email.trim(),
+        password,
+        consentAcceptedAt: timestamp,
       });
+      setSubmitting(false);
+
+      if (!result.ok) {
+        setError(result.error ?? 'Could not create account.');
+        return;
+      }
+
+      const cleanName = nickname.trim();
+      const avatarChar = cleanName.charAt(0).toUpperCase() || 'D';
+      setAuthDraft({ nickname: cleanName, consentAcceptedAt: timestamp });
+      updateProfile({ nickname: cleanName, avatarChar, leaderboardOptIn: false });
+      updateProgressionProfile({ name: cleanName, avatarChar });
       router.push('/onboarding/profile');
       return;
     }
 
-    const fallbackName = email.split('@')[0] || 'Student';
-    setAuthDraft({ nickname: fallbackName, consentAcceptedAt: null });
-    updateProfile({
-      name: fallbackName,
-      avatarChar: fallbackName.charAt(0).toUpperCase() || 'D',
-    });
+    setSubmitting(true);
+    const result = await signInStudent({ email: email.trim(), password });
+    setSubmitting(false);
+
+    if (!result.ok) {
+      setError(result.error ?? 'Invalid email or password.');
+      return;
+    }
+
+    if (!result.usedSupabase) {
+      const fallbackName = email.split('@')[0] || 'Student';
+      const avatarChar = fallbackName.charAt(0).toUpperCase() || 'D';
+      setAuthDraft({ nickname: fallbackName, consentAcceptedAt: null });
+      updateProfile({ nickname: fallbackName, avatarChar });
+      updateProgressionProfile({ name: fallbackName, avatarChar });
+    }
     router.push('/onboarding/profile');
   };
 
-  const handleDemoStudent = () => {
+  const handleDemoStudent = async () => {
+    setSubmitting(true);
+    const result = await signInDemoStudent();
+    setSubmitting(false);
+
     loadDemoStudent();
-    updateProfile({
-      name: 'Demo Student',
-      handle: '@demostudent',
-      avatarChar: 'D',
-    });
+    if (!result.usedSupabase) {
+      updateProfile({
+        nickname: 'Demo Student',
+        avatarChar: 'D',
+        educationLevel: 'Form 2',
+        favouriteSubjects: ['Mathematics', 'Computing & Tech'],
+        leaderboardOptIn: false,
+      });
+      updateProgressionProfile({
+        name: 'Demo Student',
+        handle: '@demostudent',
+        avatarChar: 'D',
+      });
+    }
     router.push('/onboarding/invite');
   };
 
@@ -175,12 +216,18 @@ export function EntryView() {
           )}
 
           <div className="flex flex-col sm:flex-row gap-3 pt-2">
-            <Button type="submit" className="flex-1">
+            <Button type="submit" disabled={submitting} className="flex-1">
               <span>{tab === 'register' ? 'Continue' : 'Sign In'}</span>
               <ArrowRight className="w-4 h-4" aria-hidden="true" />
             </Button>
 
-            <Button type="button" variant="secondary" onClick={handleDemoStudent} className="flex-1">
+            <Button
+              type="button"
+              variant="secondary"
+              disabled={submitting}
+              onClick={handleDemoStudent}
+              className="flex-1"
+            >
               <UserCheck className="w-4 h-4" aria-hidden="true" />
               <span>Continue as Demo Student</span>
             </Button>

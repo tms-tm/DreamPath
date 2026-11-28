@@ -10,6 +10,7 @@ import {
   type ActivityCompletionResult,
   type SkillProgress,
 } from '@/features/progression/math';
+import { syncProfileToSupabase, syncProgressToSupabase } from '@/features/progression/sync';
 
 export type { SkillProgress };
 
@@ -74,6 +75,19 @@ const INITIAL_SKILLS: Record<SkillId, SkillProgress> = {
   accessibility: { xp: 0, competency: 0 },
 };
 
+function scheduleProgressSync(state: ProgressionState) {
+  void syncProgressToSupabase({
+    totalXp: state.totalXp,
+    simulatedSalary: state.simulatedSalary,
+    currentLevel: state.profile.currentLevel,
+    streakDays: state.profile.streakDays,
+    missionsCompleted: state.profile.missionsCompleted,
+    completedQuests: state.completedQuests,
+    completedActivityIds: state.completedActivityIds,
+    skills: state.skills,
+  });
+}
+
 export const useProgressionStore = create<ProgressionState>()(
   persist(
     (set, get) => ({
@@ -112,7 +126,7 @@ export const useProgressionStore = create<ProgressionState>()(
       setEducationTier: (tier) =>
         set((state) => ({ profile: { ...state.profile, educationTier: tier } })),
 
-      setActiveCareer: (careerId) =>
+      setActiveCareer: (careerId) => {
         set((state) => ({
           simulatedSalary: computeSimulatedSalary(
             getBaseSalaryForCareer(careerId),
@@ -120,7 +134,10 @@ export const useProgressionStore = create<ProgressionState>()(
             state.skills
           ),
           profile: { ...state.profile, activeCareerId: careerId },
-        })),
+        }));
+        void syncProfileToSupabase({ active_career_id: careerId });
+        scheduleProgressSync(get());
+      },
 
       setSettings: (settings) =>
         set((state) => ({ profile: { ...state.profile, ...settings } })),
@@ -128,7 +145,7 @@ export const useProgressionStore = create<ProgressionState>()(
       updateProfile: (updated) =>
         set((state) => ({ profile: { ...state.profile, ...updated } })),
 
-      applySkillImpacts: (impacts, activityId) =>
+      applySkillImpacts: (impacts, activityId) => {
         set((state) => {
           const baseSalary = getBaseSalaryForCareer(state.profile.activeCareerId);
 
@@ -179,9 +196,11 @@ export const useProgressionStore = create<ProgressionState>()(
               currentLevel: computeLevel(nextTotalXp),
             },
           };
-        }),
+        });
+        scheduleProgressSync(get());
+      },
 
-      applyReward: (reward) =>
+      applyReward: (reward) => {
         set((state) => {
           const { xp = 0, missionCountDelta = 0, activityId } = reward;
           const baseSalary = getBaseSalaryForCareer(state.profile.activeCareerId);
@@ -220,9 +239,11 @@ export const useProgressionStore = create<ProgressionState>()(
               missionsCompleted: state.profile.missionsCompleted + missionCountDelta,
             },
           };
-        }),
+        });
+        scheduleProgressSync(get());
+      },
 
-      completeQuest: (questId, xpReward) =>
+      completeQuest: (questId, xpReward) => {
         set((state) => {
           if (
             state.completedQuests.includes(questId) ||
@@ -252,7 +273,9 @@ export const useProgressionStore = create<ProgressionState>()(
               missionsCompleted: state.profile.missionsCompleted + 1,
             },
           };
-        }),
+        });
+        scheduleProgressSync(get());
+      },
 
       completeActivity: (input) => {
         const state = get();
@@ -279,6 +302,7 @@ export const useProgressionStore = create<ProgressionState>()(
                 state.profile.missionsCompleted + (input.missionCountDelta ?? 0),
             },
           });
+          scheduleProgressSync(get());
         }
 
         return result;
