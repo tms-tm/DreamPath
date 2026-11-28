@@ -1,36 +1,62 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# DreamPath
 
-## Getting Started
+A bilingual (English & Bahasa Malaysia) career exploration web app for Malaysian secondary school students aged 13–15 (Nebula tier). Built with Next.js App Router, React 19, TypeScript, Tailwind CSS v4, Zustand, Zod, and Supabase.
 
-First, run the development server:
+## Setup
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+### Prerequisites
+- Node.js `>= 20`
+- npm
+
+### Local Development
+1. Install dependencies:
+   ```bash
+   npm install
+   ```
+2. Copy `.env.example` to `.env.local` and fill in your environment variables (Supabase URL/anon key, optional `NEXT_PUBLIC_DEV_SHORTCUTS=true`).
+3. Start the development server:
+   ```bash
+   npm run dev
+   ```
+4. Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+## Scripts
+
+| Script | Command | Description |
+| :--- | :--- | :--- |
+| `dev` | `npm run dev` | Start Next.js development server |
+| `build` | `npm run build` | Build production bundle |
+| `start` | `npm run start` | Start production server |
+| `lint` | `npm run lint` | Run ESLint across the repository |
+| `typecheck` | `npm run typecheck` | Run TypeScript compiler check (`tsc --noEmit`) |
+| `test` | `npm test` | Run Vitest unit and content-validation tests (`vitest run`) |
+| `format:check` | `npm run format:check` | Verify Prettier formatting |
+
+## Folder Structure
+
+```text
+src/
+├── app/            # Next.js App Router pages and API routes (thin route entrypoints only)
+├── components/
+│   ├── ui/         # Shared UI primitives (Button, Card, Badge, ProgressBar, PageHeader, Modal)
+│   └── layout/     # AppShell, Sidebar, MobileNav, Header
+├── content/        # Zod-validated bilingual (en/ms) data (careers, scenarios, quizzes, studies, i18n, onboarding)
+├── features/       # Domain slices (auth, careers, dreamy, leaderboard, onboarding, practice, profile, progression, settings)
+└── lib/            # Pure utilities, career matching, i18n helper, Supabase clients
+tests/              # Vitest unit, scenario-graph, and Zod content-schema tests
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## How to Add a Career
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Adding a new career requires no changes to routes, UI components, or database migrations:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. **Validate against Zod schemas (`src/content/schemas.ts`):** Ensure your career, scenario, quiz (5 questions), and study lesson objects match the Zod schemas and include both `en` and `ms` blocks.
+2. **Register Career Metadata (`src/content/careers.ts`):** Add a new entry to `CAREERS` with a unique kebab-case `id`, `family`, `icon`, `baseSalary`, `salaryRange` + `salarySource`, `coreSkills`, and complete `i18n.en` / `i18n.ms` metadata (including Malaysian SPM subjects and university pathways).
+3. **Add Career Matching Weights (`src/content/onboarding-quiz.ts`):** Add `subjectWeights` and `traitWeights` for the new `careerId` in `careerWeights`.
+4. **Add Ask Dreamy Knowledge (`src/content/dreamy-kb.ts`):** Add salary bands, Malaysian public/private university routes, and EN/BM keyword triggers.
+5. **Author Content Files (EN + BM):**
+   - `src/content/studies/<careerId>.ts` — study lessons (`30 XP` each).
+   - `src/content/quizzes/<careerId>.ts` — 5-question quizzes.
+   - `src/content/scenarios/<careerId>.ts` — branching scenario graphs with valid `startNodeId`, decision/mentor nodes, and terminal outcomes.
+6. **Export from Registries:** Register the new arrays in `src/content/studies/index.ts`, `src/content/quizzes/index.ts`, and `src/content/scenarios/index.ts`.
+7. **Verify:** Run `npm test` (`vitest run`) to validate Zod schemas, exact 5-question quizzes, scenario graph reachability, career-matching coverage, and EN/BM parity.
