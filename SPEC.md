@@ -1,516 +1,170 @@
-# SPEC.md — DreamPath Unified Technical & Product Specification
+# SPEC.md — DreamPath Specification
 
-This document provides a comprehensive, unified technical and product specification for **DreamPath**, an AI-powered gamified career exploration web application built for students. It combines internal Human-Computer Interaction (HCI) research, educational tier designs, route structures, and user personas with external technical research covering open occupational datasets (O*NET & ESCO), JSON scenario schemas, Zustand state management architecture, and LLM token optimization.
-
----
-
-## 1. Executive Overview & Target Audience
-
-### 1.1 Mission & Vision
-Many students, particularly in developing regions like Indonesia, possess ambitious career goals but lack early guidance, structured roadmaps, and experiential insights. DreamPath bridges this guidance gap by transforming career exploration into a gamified, interactive journey. Players explore real-world vocations, complete educational quizzes, engage in branching job simulations, earn virtual salaries, and build verifiable skills.
-
-### 1.2 Educational Tier Framework
-DreamPath adapts its UI theme, target age group, mechanics, touch targets, and pedagogical goals across 5 distinct educational tiers:
-
-| Tier Name | Target Grade & Age | Journey Phase | Quiz Setup & Count | XP Structure | UI Style & Accessibility |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **Moonrise** | Pre-school (Ages 4–6) | Discover | 15 stages (3 units × 5 stages); 3 Qs/quiz, 5 Qs/checkpoint | 10 XP/quiz, 20 XP/checkpoint (180 Total) | Silver dusk (#1A2455), 64px tap targets, full audio read-aloud, stars only (no ranks). |
-| **Starlight** | Lower Primary (Ages 7–9) | Explore | 15 stages (3 units × 5 stages); 4 Qs/quiz, 6 Qs/checkpoint | 20 XP/quiz, 40 XP/checkpoint (360 Total) | Indigo night (#231C52) & Gold sparkle (#FFD166), 56px tap targets, audio support. |
-| **Aurora** | Upper Primary (Ages 10–12) | Connect | 15 stages (3 units × 5 stages); 5 Qs/quiz, 8 Qs/checkpoint | 30 XP/quiz, 60 XP/checkpoint (540 Total) | Night teal (#0C3140) & Mint (#4DF0C0), 48px tap targets, 8 career fields. |
-| **Nebula** | Lower Secondary (Ages 13–15) | Plan | 15 stages (3 units × 5 stages); 6 Qs/quiz, 10 Qs/checkpoint | 40 XP/quiz, 80 XP/checkpoint (720 Total) | Plum night (#34154A) & Pink (#FF6FD8), goal-setting cards, subject path mapping. |
-| **Galaxy** | Upper Secondary (Ages 16–18+) | Decide | 15 stages (3 units × 5 stages); 7 Qs/quiz, 12 Qs/checkpoint | 50 XP/quiz, 100 XP/checkpoint (900 Total) | Deep violet (#1F1456) & Gold core (#FFD166), full virtual salary leaderboard, Plan B mapping. |
-
-*Total System XP across all 5 tiers = 2,700 XP.*
-
-### 1.3 Target User Personas
-1. **Tan Mei Ling (19, Diploma / Foundation)**: Career-focused, seeks proof of employability, prefers Simulation/Quiz modes, benchmarks herself on the Virtual Salary Leaderboard for finance/law.
-2. **Aiman Hakim (14, Form 4 Secondary Boarding School)**: High achiever, limited access to mentors, wants realistic case-study simulations to test his ambition of becoming a lawyer.
-3. **Priya Devi (21, Undergraduate)**: Undecided across multiple STEM fields, needs multi-field career roadmaps, AI virtual mentorship, CV portfolio tools, and Expert Rank certificates.
-4. **Noor Aisyah (18, University Matriculation)**: Torn between healthcare, ICT, and education; requires the AI Career Pathfinding Quiz up front, rapid career switching, and streak counters.
+## 1. Goal
+Build a working, maintainable, bilingual (English & Bahasa Malaysia) career exploration web app for **Malaysian secondary school students aged 13–15 (Nebula tier only)** within a 2–4 week solo university assignment. Every career and learning activity is data-driven, backed by Supabase accounts tested strictly with dummy data, and validated through a polished live demo and real-student testing.
 
 ---
 
-## 2. Prescribed Tech Stack
+## 2. Scope
 
-- **Frontend Framework**: Next.js 14+ (App Router, Server Components, Route Handlers) with React 18 & TypeScript 5.x.
-- **Styling & UI Components**: Tailwind CSS, shadcn/ui component library, Radix UI primitives, Lucide React icons, Framer Motion for micro-interactions and star animations.
-- **State Management**: Zustand 4.x using sliced stores (`useSessionStore`, `useProgressionStore`, `useQuestStore`, `useSimulationStore`) with local storage persistence and optimistic UI updates.
-- **Backend & Database**: Supabase (PostgreSQL, Row-Level Security, Supabase Auth, Storage for certificates/portfolios, Edge Functions).
-- **Validation**: Zod for runtime API/form validation; Ajv for client/server JSON Schema validation of scenario graphs.
-- **AI & Dataset Integration**: OpenAI API / Vercel AI SDK (`ai/react`) for structured streaming mentorship, mapped to edge-cached O*NET Web Services v2 and ESCO APIs.
+### In Scope
+- **Single Tier:** Nebula only (ages 13–15, Form 1–3).
+- **Careers (Data-Driven):**
+  - **3 Core Careers** (*Software Engineer, Junior Lawyer, Future Doctor*): **3 scenarios, 3 quizzes (5 questions each), 3 study lessons** per language in Milestone 1; expanding toward **10 / 10 / 10** per language in rounds.
+  - **2 Secondary Careers** (*Product Designer, Master Chef*): **2 scenarios, 2 quizzes (5 questions each), 2 study lessons** per language.
+- **Core Loop:** Study Lesson → 5-Question Quiz → Branching Scenario Simulation → XP, Skill Competency & Virtual Salary (RM) progression → Leaderboard & Profile.
+- **Languages:** Full UI and learning content in **English (`en`)** and **Bahasa Malaysia (`ms`)**.
+- **Accounts & Safety:** Supabase Auth (email + password), pre-made demo tester accounts, registration (`nickname`, `email`, `password`, parental-consent checkbox + timestamp), cascading account deletion, anonymized leaderboard (`username` + `avatarChar` only).
+- **Ask Dreamy:** Pre-written bilingual responses + structured cards (career matches, Malaysian university/SPM routes, estimated salaries) rewritten for the 5 careers.
+- **Quality & Ops:** Feature folders, one shared UI component set, design tokens only (light theme first), Zod content validation, Vitest unit tests for game math, ESLint/Prettier, GitHub Actions CI.
 
----
-
-## 3. Route Map & Screen Layouts
-
-DreamPath follows a flat, 5-tab global navigation architecture (Home, Quests/Modes, Leaderboard, Achievements, Profile) to adhere to HCI rules of spatial consistency and shallow hierarchy depth.
-
-```
-/ (Landing Page)
-├── /onboarding
-│   ├── /login
-│   ├── /register
-│   ├── /career-quiz
-│   ├── /education
-│   └── /career-select
-├── /home (Main Student Dashboard)
-├── /modes (Game Mode Hub)
-│   ├── /study (Study Mode - Interactive Notes)
-│   ├── /quiz (Quiz Mode - Theory MCQs)
-│   └── /simulation (Simulation Mode - Case Study Engine)
-├── /quests/daily (Daily Quest Runner)
-├── /leaderboard (Virtual Salary "Top Dreamers")
-├── /achievements (Badges & Certificate Generator)
-├── /profile (User Portfolio & Mock Interview Prep)
-└── /settings (Accessibility & Parent Controls)
-```
-
-### 3.1 Onboarding Routes
-
-#### `GET /` — Landing Screen
-- **Layout**: Full-screen hero section with floating ambient star background.
-- **Components**: DreamPath logo banner, "Start Your Dream!" CTA button, AI Career Quiz card ("Can't think of your dream ambition? Take our AI quiz").
-- **User Actions**: Click CTA to enter registration or click AI Quiz preview.
-
-#### `GET /onboarding/login` & `/onboarding/register`
-- **Layout**: Centered card container with high contrast, single-column input layout.
-- **Components**: Username/Password inputs, OAuth buttons, educational tier dropdown.
-- **User Actions**: Authenticate or switch to signup mode.
-
-#### `GET /onboarding/career-quiz` — AI Pathfinding Quiz
-- **Layout**: Multi-step wizard with smooth horizontal slide transitions.
-- **Components**: 5-question interest/quirk questionnaire, progress indicator, AI suggestion cards with career match percentages.
-- **User Actions**: Select interests, view AI-suggested career shortlist, select starting career.
-
-#### `GET /onboarding/education` — Tier Selector
-- **Layout**: 5 horizontal cards featuring custom tier themes (Moonrise to Galaxy).
-- **Components**: Color badges, target age ranges, journey phase tags.
-- **User Actions**: Choose active education tier.
-
-#### `GET /onboarding/career-select` — Career Path Picker
-- **Layout**: Grid layout of career cards (Software Developer, Doctor, Designer, Chef, Lawyer).
-- **Components**: Career icon, estimated base salary, skill tags.
-- **User Actions**: Set primary active career.
+### Out of Scope (Removed or Deferred to `IDEAS.md`)
+- **Removed:** Moonrise, Starlight, Aurora, Galaxy tiers; `/parent` page, parent PIN/lock, screen-time timers, `parentName`/`parentEmail` fields; `/achievements` page; old 3-question aptitude quiz (`src/data/aptitude.ts`, replaced by the 8-question onboarding personality quiz).
+- **Deferred (see `IDEAS.md`):** Dark mode, Ask Dreamy Gemini/Firebase LLM follow-ups, real O*NET/ESCO API sync, verified parent email workflow.
+- **Pre-Agreed Cut Order (if short on time):** (1) Dark mode → (2) Ask Dreamy LLM → (3) Core content >6/6/6 → (4) Malay content >3/3/3 for core → (5) Resume Builder → (6) Notifications. **Never cut:** core learning loop, real-student testing, consent/privacy basics, game-math tests.
 
 ---
 
-### 3.2 Core Application Routes
-
-#### `GET /home` — Main Dashboard
-- **Layout**: Top status bar + 2-column main area + persistent bottom 5-tab menu.
-- **Key Components**:
-  1. *Header*: Avatar, greeting, level badge (e.g. Lv. 7), active career switcher pills.
-  2. *Knowledge Indicator*: Visual progress bar from Beginner to Master at the top of the dashboard.
-  3. *Experience Bar*: XP progress toward next level (e.g. "660 XP / 780 XP to Level 8").
-  4. *Skill Progress Bars*: Individual competency percentages (e.g. HTML/CSS at 90%, JS at 62%).
-  5. *Daily Quest Card*: Active task banner with timer and start button ("Daily Quest: Build a button — +50 XP").
-- **User Actions**: Switch active career, start daily quest, tap navigation bar icons.
-
-#### `GET /modes` — Game Mode Hub
-- **Layout**: 3 prominent interactive mode cards.
-- **Key Components**:
-  - *Study Mode Card*: Interactive theory notes & background reading.
-  - *Quiz Mode Card*: Multiple-choice questions (MCQs) for knowledge testing.
-  - *Simulation Mode Card*: Real-world short-answer & branching case study scenarios.
-- **User Actions**: Tap any card to launch the respective learning route.
-
-#### `GET /modes/study` — Study Mode
-- **Layout**: Reader view with collapsible table of contents and progress tracker.
-- **Key Components**: Markdown lesson renderer, key term callouts, audio read-aloud control, "Mark Complete" button (+20 XP).
-
-#### `GET /modes/quiz` — Quiz Mode
-- **Layout**: Card-based quiz player with immediate visual/audio feedback.
-- **Key Components**: Question counter, question prompt, option buttons, star rating calculator, progress summary modal.
-
-#### `GET /modes/simulation` — Simulation Mode
-- **Layout**: Dialogue-heavy split-screen layout (Mentor NPC portrait + interactive scenario tree).
-- **Key Components**: Mentor NPC dialogue bubble, dynamic scenario prompt, decision choices with skill delta previews, feedback pane, terminal summary card.
-
-#### `GET /leaderboard` — Virtual Salary Leaderboard ("Top Dreamers")
-- **Layout**: Top stats summary cards + 3-stage podium + scrollable leaderboard table.
-- **Key Components**:
-  1. *Stats Row*: Streak counter (e.g., 17 days), completed challenges (27), collected quiz points (67,231), level (Lv. 8).
-  2. *Top 3 Podium*: Avatars, names, career titles, and simulated monthly salary (e.g. #1 Rahf Fathy — RM 18,000/month).
-  3. *Rankings Table*: Ranks #4–#10+ displaying user avatar, name, career role, level badge, and monthly salary in RM.
-  4. *User Sticky Rank*: Sticky footer showing current user's rank (e.g., #14 Username — RM 8,320/month) and distance to Top 10.
-
-#### `GET /achievements` — Badges & Certificates
-- **Layout**: Badge grid + certificate preview modal.
-- **Key Components**: Unlocked level badges (Moonrise to Galaxy), skill milestone icons, Expert Rank downloadable PDF/PNG certificate generator.
-
-#### `GET /profile` — User Portfolio & Interview Prep
-- **Layout**: Two-tab layout (Portfolio Builder / Mock Interview Prep).
-- **Key Components**: Saved scenario outcomes, project artifacts, audio/text mock interview simulator with AI feedback.
-
-#### `GET /settings` — Accessibility & Parent Controls
-- **Layout**: Grouped settings menu.
-- **Key Components**: Read-aloud audio toggle, sound effects slider, reduce-motion toggle, adult/parent override lock (to switch child age tiers).
+## 3. Personas (Malaysian Lower Secondary, Ages 13–15)
+1. **Aiman Hakim (14, Form 2, Kuala Lumpur):** Curious about Software Engineering vs. Law; learns best through short interactive scenarios and seeing how SPM subject choices connect to careers.
+2. **Nurul Izzah / Mei Ling (15, Form 3, Penang):** Choosing Form 4 Science vs. Arts stream soon; switches between English and Bahasa Malaysia and checks estimated Malaysian university routes and salaries with Ask Dreamy.
 
 ---
 
-## 4. Game Mechanics & State Management
-
-### 4.1 Scoring, XP & Salary Formulas
-
-#### 1. Star Rating Calculation (Per Stage)
-$$\text{Accuracy} = \frac{\text{Correct Knowledge Answers}}{\text{Total Knowledge Questions}} \times 100$$
-$$\text{Stars} = \begin{cases} 3 & \text{if } \text{Accuracy} \ge 90\% \\ 2 & \text{if } 60\% \le \text{Accuracy} < 90\% \\ 1 & \text{if } \text{Completion only} \end{cases}$$
-
-#### 2. XP Multipliers & Rewards
-$$\text{Quiz XP} = 10 \times \text{Tier Level Number} \quad (\text{Moonrise}=10, \text{Starlight}=20, \text{Aurora}=30, \text{Nebula}=40, \text{Galaxy}=50)$$
-$$\text{Checkpoint XP} = \text{Quiz XP} \times 2$$
-
-#### 3. Virtual Monthly Salary Calculation (RM)
-$$\text{Simulated Salary (RM)} = \text{Base Salary} + (\text{Total XP} \times 15) + \sum (\text{Skill Competency Level} \times 250)$$
+## 4. Tech Stack
+- **Framework:** Next.js 16 App Router (upgrade from `16.4.4` to patched `16.x` to clear `SecurityFatalError`), React 19, TypeScript 5.
+- **Styling & UI:** Tailwind CSS v4 + design tokens from `DESIGN.md`; one shared UI primitive set (`src/components/ui/`); `lucide-react` icons; Three.js (`DreamyMascot`) kept as-is or lightweight fallback.
+- **State & Validation:** Zustand 5 (thin client/session cache synced with Supabase) + Zod (schema validation for forms, API payloads, and content files).
+- **Backend:** Supabase (Auth, PostgreSQL, Row-Level Security, server-side route handlers for account deletion). Hosting: Vercel + Supabase free tier.
+- **Testing & CI:** Vitest (game math, scenario traversal, content schema validation), ESLint, Prettier, `tsc --noEmit`, GitHub Actions workflow.
 
 ---
 
-### 4.2 Zustand State Architecture
+## 5. Routes Table (Per `docs/CURRENT-STATE.md`)
 
-State is split across 4 modular client stores using Zustand with `persist` middleware:
+| Route | Status | Current Gap / Target Work |
+|---|---|---|
+| `/` | **Partial** | KPIs, roadmap, skills hardcoded. Wire to live progression state, active career, daily quest & `en`/`ms` strings. |
+| `/paths` | **Partial** | Broken career-switch IDs, hardcoded roadmap. Drive from career catalog + active career progress + Malaysian SPM/uni summary. |
+| `/modes` | **Partial** | Study/Quiz links go to `/paths` or `/simulation`. Wire cards to `/modes/study`, `/modes/quiz`, `/simulation` with real counts. |
+| `/modes/study` | **TO BUILD** | Lesson reader (`studies` data) with key terms, read-aloud toggle, and "Mark Complete" XP reward. |
+| `/modes/quiz` | **TO BUILD** | 5-question MCQ player (`quizzes` data) with instant feedback, star rating, and XP reward. |
+| `/simulation` | **Partial** | Single hardcoded 1-step case. Replace with generic data-driven `ScenarioPlayer` reading multi-node graphs. |
+| `/leaderboard` | **Partial** | 15 hardcoded named rows + broken filters. Show seeded dummy Dreamers + opt-in real users (`username` + `avatarChar` only). |
+| `/profile` | **Partial** | Hardcoded tier/school/skills. Render real user level, skills, completed activities, leaderboard opt-in, **retake quiz** & **switch career** actions. |
+| `/settings` | **Partial** | Hardcodes Alex Rivera & broken toggles. Add `en`/`ms` language toggle, persistent sound/reduce-motion, and Delete Account. |
+| `/ask-dreamy` (+ overlay) | **Partial** | Covers wrong careers (`se`/`da`/`ux`). Rewrite pre-written intents & cards for all 5 careers in `en`/`ms`. |
+| `/resume-builder` | **Partial** | Clinical blue styling, hardcoded persona. Restyle to oat tokens & wire to store *(Cut #5 if needed)*. |
+| `/notifications` | **Partial** | Static list, dead CTAs. Wire or drop cleanly *(Cut #6 if needed)*. |
+| `/onboarding` | **TO BUILD** | Step 1 Entry: Supabase email/password login, registration (consent checkbox + timestamp), or **Demo Student** quick entry. |
+| `/onboarding/profile` | **TO BUILD** | Step 2 Academic Profile: education level (**Form 1, Form 2, Form 3** only) + 2–3 favourite subjects. |
+| `/onboarding/invite` | **TO BUILD** | Step 3 Quiz Invitation: CSS planet intro, profile recap, start quiz or skip; dev-only "jump to Step 3" behind `NEXT_PUBLIC_DEV_SHORTCUTS`. |
+| `/onboarding/quiz` | **TO BUILD** | Step 4 Personality Quiz: 8 bilingual questions (work preferences, problem-solving style, interests). |
+| `/onboarding/results` | **TO BUILD** | Step 5 Career Matching: top 3 career matches with % score and personalized bilingual match reasons (or retake). |
+| `/onboarding/confirm` | **TO BUILD** | Step 6 Confirmation: "Are you sure?" career summary; locks `activeCareerId` and opens `/`. |
+| `/api/account/delete` | **TO BUILD** | Server route verifying password + deleting `auth.users` via `SUPABASE_SERVICE_ROLE_KEY` (cascades profile & progress). |
+| `/parent`, `/achievements` | **Removed** | Delete routes and remove all parent-lock, screen-time, mock-interview, and achievement dead code. |
 
-```typescript
-// stores/useProgressionStore.ts
-import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
-
-export type SkillId = 'html-css' | 'javascript' | 'problem-solving' | 'communication' | 'accessibility';
-
-export interface SkillProgress {
-  xp: number;
-  competency: number; // 0 to 100
-}
-
-interface ProgressionState {
-  userId: string | null;
-  totalXp: number;
-  simulatedSalary: number;
-  skills: Record<SkillId, SkillProgress>;
-  careerFit: Record<string, number>;
-  pendingOps: number;
-  hydrateUser: (userId: string, initial: Partial<ProgressionState>) => void;
-  applySkillImpacts: (impacts: Array<{ skillId: SkillId; xp: number; competencyDelta?: number }>) => void;
-  applyReward: (reward: { xp?: number; salaryDelta?: number }) => void;
-}
-
-export const useProgressionStore = create<ProgressionState>()(
-  persist(
-    (set, get) => ({
-      userId: null,
-      totalXp: 0,
-      simulatedSalary: 0,
-      skills: {
-        'html-css': { xp: 0, competency: 0 },
-        javascript: { xp: 0, competency: 0 },
-        'problem-solving': { xp: 0, competency: 0 },
-        communication: { xp: 0, competency: 0 },
-        accessibility: { xp: 0, competency: 0 },
-      },
-      careerFit: {},
-      pendingOps: 0,
-      hydrateUser: (userId, initial) =>
-        set((state) => ({
-          userId,
-          totalXp: initial.totalXp ?? state.totalXp,
-          simulatedSalary: initial.simulatedSalary ?? state.simulatedSalary,
-          skills: { ...state.skills, ...(initial.skills ?? {}) },
-          careerFit: { ...state.careerFit, ...(initial.careerFit ?? {}) },
-        })),
-      applySkillImpacts: (impacts) =>
-        set((state) => {
-          const nextSkills = { ...state.skills };
-          let gainedXp = 0;
-          for (const impact of impacts) {
-            const current = nextSkills[impact.skillId] ?? { xp: 0, competency: 0 };
-            nextSkills[impact.skillId] = {
-              xp: current.xp + impact.xp,
-              competency: Math.max(0, Math.min(100, current.competency + (impact.competencyDelta ?? 0))),
-            };
-            gainedXp += Math.max(0, impact.xp);
-          }
-          return {
-            skills: nextSkills,
-            totalXp: state.totalXp + gainedXp,
-            pendingOps: state.pendingOps + 1,
-          };
-        }),
-      applyReward: ({ xp = 0, salaryDelta = 0 }) =>
-        set((state) => ({
-          totalXp: state.totalXp + xp,
-          simulatedSalary: state.simulatedSalary + salaryDelta,
-          pendingOps: state.pendingOps + 1,
-        })),
-    }),
-    {
-      name: 'dreampath-progression',
-      storage: createJSONStorage(() => localStorage),
-      partialize: (state) => ({
-        userId: state.userId,
-        totalXp: state.totalXp,
-        simulatedSalary: state.simulatedSalary,
-        skills: state.skills,
-        careerFit: state.careerFit,
-      }),
-    }
-  )
-);
-```
+*(0 routes are Done today per `docs/CURRENT-STATE.md`; all kept existing routes are Partial.)*
 
 ---
 
-### 4.3 Branching Scenario JSON Schema & Graph Structure
+## 6. Game Rules (Single Source of Truth)
 
-Scenario graphs use node IDs rather than nested trees to support loops, shared endings, and deterministic branching.
+### 6.1 XP & Level Formula
+Every XP gain routes through pure domain functions. Activity completions are **idempotent** (`completedActivityIds`): first completion awards XP; replays award `0 XP`.
+- **Study Lesson:** `+30 XP` on completion.
+- **Quiz (5 questions):** `Quiz XP = 20 + (correctCount × 8)` → range `20 XP` (0/5) to `60 XP` (5/5).
+  - **Star Rating:** `3★` if `>= 80%` (4–5/5), `2★` if `60%–79%` (3/5), `1★` if `< 60%` (0–2/5).
+- **Simulation Scenario:** Sum of unique visited choice `xp` + terminal node `xp` (max ~`120 XP` per scenario).
+- **Daily Quest:** `+80 XP` once per quest ID.
+- **Level Formula:** `Level = Math.max(1, Math.floor(totalXp / 300) + 1)` (next level every `300 XP`).
 
-```json
-{
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://dreampath.app/schemas/career-scenario.json",
-  "title": "DreamPath Career Scenario Graph",
-  "type": "object",
-  "required": ["schemaVersion", "scenarioId", "careerId", "startNodeId", "nodes"],
-  "properties": {
-    "schemaVersion": { "type": "string", "const": "1.0.0" },
-    "scenarioId": { "type": "string" },
-    "careerId": { "type": "string" },
-    "title": { "type": "string" },
-    "startNodeId": { "type": "string" },
-    "nodes": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "required": ["nodeId", "type", "prompt"],
-        "properties": {
-          "nodeId": { "type": "string" },
-          "type": { "type": "string", "enum": ["decision", "mentor", "terminal"] },
-          "prompt": { "type": "string" },
-          "npc": {
-            "type": "object",
-            "required": ["name", "role", "dialogue"],
-            "properties": {
-              "name": { "type": "string" },
-              "role": { "type": "string" },
-              "dialogue": { "type": "string" }
-            }
-          },
-          "choices": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "required": ["choiceId", "label", "nextNodeId"],
-              "properties": {
-                "choiceId": { "type": "string" },
-                "label": { "type": "string" },
-                "nextNodeId": { "type": "string" },
-                "skillImpacts": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "required": ["skillId", "xp"],
-                    "properties": {
-                      "skillId": { "type": "string" },
-                      "xp": { "type": "integer" },
-                      "competencyDelta": { "type": "number" }
-                    }
-                  }
-                },
-                "rewards": {
-                  "type": "object",
-                  "properties": {
-                    "xp": { "type": "integer" },
-                    "salaryDelta": { "type": "integer" }
-                  }
-                }
-              }
-            }
-          },
-          "terminalOutcome": {
-            "type": "object",
-            "required": ["outcomeId", "title", "summary"],
-            "properties": {
-              "outcomeId": { "type": "string" },
-              "title": { "type": "string" },
-              "summary": { "type": "string" },
-              "rewards": {
-                "type": "object",
-                "properties": {
-                  "xp": { "type": "integer" },
-                  "salaryDelta": { "type": "integer" }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-}
-```
+**Worked XP Example:** A student starts at `0 XP` (**Lv. 1**). They finish 1 Lesson (`+30 XP`), score `4/5` on a Quiz (`20 + 4×8 = +52 XP`, `80%` = `3★`), finish 1 Scenario (`+110 XP`), and claim 1 Daily Quest (`+80 XP`).
+- `totalXp = 30 + 52 + 110 + 80 = 272 XP` → `Level = floor(272 / 300) + 1 = 1` (`28 XP` to Lv. 2).
+- After 1 more Lesson (`+30 XP`): `totalXp = 302 XP` → `Level = floor(302 / 300) + 1 = 2`.
+
+### 6.2 Virtual Monthly Salary Formula (RM)
+One pure formula computes `simulatedSalary` from active career `baseSalary`, `totalXp`, and the 5 skills (`competency` clamped `0..100`). No action ever adds an ad-hoc `salaryDelta`:
+$$\text{Simulated Salary (RM)} = \text{round}\Big(\text{baseSalary} \times 0.30 + \text{totalXp} \times 1.0 + \sum_{s \in \text{Skills}} (\text{competency}_s \times 3)\Big)$$
+
+- **Worked Salary Example (Software Engineer, `baseSalary = 4500`):**
+  - At start (`totalXp = 0`, all competencies `0`): `round(4500 × 0.30 + 0 + 0) = RM 1,350 /mo`.
+  - At `totalXp = 302` with `problem-solving = 15`, `javascript = 10`, others `0`:
+    - `BaseShare = 4500 × 0.30 = 1,350`
+    - `XpBonus = 302 × 1.0 = 302`
+    - `SkillBonus = (15 + 10) × 3 = 75`
+    - `Simulated Salary = 1,350 + 302 + 75 = RM 1,727 /mo`.
+
+### 6.3 Onboarding Career Matching Rules
+- **Allowed Education Levels:** **Form 1, Form 2, Form 3 only.** *Reason:* All Nebula-tier content is written for ages 13–15 before Form 4 stream selection; excluding Form 4–5 / Pre-U prevents out-of-scope expectations.
+- **Subjects & Quiz Inputs:** Student picks 2–3 of 6 subjects (`Mathematics`, `Science`, `Computing & Tech`, `Languages`, `Art & Design`, `Business & Economics`) and answers 8 scenario-style questions covering work preferences, problem-solving style, and interests. Each chosen option adds `+2` to its primary trait and `+1` to its secondary trait across 5 traits: `AN` (Analytical), `CR` (Creative), `SO` (Social), `BU` (Builder), `EN` (Entrepreneurial).
+- **Scoring Formula (All 5 App Careers):**
+  1. `traitDot = sum(userTraits[t] * career.traitWeights[t])`; `traitNorm = maxTraitDot > 0 ? traitDot / maxTraitDot : 0`.
+  2. `subjectPts = sum(career.subjectWeights[s] ?? 0)` for selected subjects; `subjectNorm = subjectPts / (3 * selectedSubjects.length)`.
+  3. `match = clamp(round(60 + 37 * (0.6 * traitNorm + 0.4 * subjectNorm)), 60, 97)`.
+- **Top 3 & Tie-Breaking:** Sort descending by `(match, traitDot, subjectPts, catalogOrder)` and take the top 3. If `top3[i].match >= top3[i-1].match`, decrement `top3[i].match` by 1 (min `60`) so `#1 > #2 > #3` are strictly ordered.
+- **Worked Matching Example:** Student picks `["Mathematics", "Computing & Tech"]` and earns `userTraits = { AN: 10, CR: 3, SO: 2, BU: 6, EN: 3 }`.
+  - *Software Engineer* (`traitWeights: { AN: 3, BU: 1 }`, `subjectWeights: { Mathematics: 2, "Computing & Tech": 3 }`): `traitDot = 10×3 + 6×1 = 36` (suppose `maxTraitDot = 36`, so `traitNorm = 1.0`), `subjectPts = 2 + 3 = 5`, `subjectNorm = 5 / (3×2) = 0.833`. `match = round(60 + 37 × (0.6×1.0 + 0.4×0.833)) = round(94.53) = 95%` (#1).
+  - *Future Doctor* (`traitWeights: { AN: 2, SO: 2 }`, `subjectWeights: { Mathematics: 1 }`): `traitDot = 24`, `traitNorm = 0.667`, `subjectPts = 1`, `subjectNorm = 0.167` → `match = round(60 + 37 × (0.40 + 0.067)) = 77%`.
+- **Persistence & Retake:** Store only `education_level`, `favourite_subjects`, and `active_career_id`; **do not store** raw 8-question quiz answers or trait counts. Students can retake the quiz or switch careers anytime from `/profile`.
+- **6-Step Flow & Transitions:**
+  1. `/onboarding` (Entry): Sign In / Create Account (`nickname`, `email`, `password`, mandatory parental-consent checkbox) or **Demo Student** quick entry (authenticates seeded demo account, pre-fills `Form 2` + `["Mathematics", "Computing & Tech"]`, and lands on `/onboarding/invite`).
+  2. `/onboarding/profile` (Academic Profile): Select `Form 1`, `Form 2`, or `Form 3` (`Nebula` only) and `2–3` favourite subjects.
+  3. `/onboarding/invite` (Quiz Invitation): CSS planet intro + profile recap; **Start Personality Quiz** → `/onboarding/quiz`, **Skip to Dashboard** → `/onboarding/confirm` (unselected state) or `/`; dev-only "Jump to Step 3" shortcut renders strictly when `NEXT_PUBLIC_DEV_SHORTCUTS === 'true'`.
+  4. `/onboarding/quiz` (Personality Quiz): 8 bilingual questions (4 options each) with progress bar, keyboard arrow navigation, Back/Next, and brief matching transition → `/onboarding/results`.
+  5. `/onboarding/results` (Career Matching): Top 3 career cards (`#1 Best Match`, `#2`, `#3`) with `%` match, `"Estimated (MY)"` salary range, top skills, bilingual template match reason, **Choose This Career** → `/onboarding/confirm`, or **Retake the quiz** → `/onboarding/quiz`.
+  6. `/onboarding/confirm` (Confirmation): "Are you sure?" summary card; confirming commits `education_level`, `favourite_subjects`, and `active_career_id` and opens `/`. Retaking from `/profile` enters `/onboarding/quiz` directly using saved `education_level` and `favourite_subjects`.
 
 ---
 
-### 4.4 LLM Latency & Token Optimization
+## 7. Data Schemas (Validated by Zod)
+All content lives in typed data modules (`src/content/`), never hardcoded in page TSX. Every salary figure displays an `"Estimated (MY)"` badge and cites a `salarySource` (e.g., JobStreet MY / DOSM / Glassdoor MY).
 
-DreamPath enforces a **hybrid simulation architecture**:
-1. **Deterministic Scenario Graph**: All XP, skill impacts, branching logic, and career facts are pre-computed in static JSON.
-2. **Dynamic LLM Layer**: LLMs generate personalized mentor advice, conversational tone, and context-aware feedback.
-3. **Prompt Caching**: System instructions and career context are cached separately from volatile turn data.
-
-```
-[SYSTEM PROMPT - CACHED]
-You are Maya, a supportive Senior Front-End Engineer mentoring a student on DreamPath.
-Keep feedback encouraging, practical, and under 80 words. Return JSON only.
-
-[CAREER CONTEXT - CACHED PER CAREER]
-Career: Junior Front-End Developer (O*NET 15-1252.00)
-Core Skills: HTML/CSS, JavaScript, Problem Solving, Accessibility.
-
-[VOLATILE STATE - UNCACHED]
-Current Node: mobile-checkout-bug
-Student Choice: "Reproduce the bug before patching"
-Skill Delta: HTML/CSS +10, Problem Solving +15
-```
+- **`Career`** (`src/content/careers.ts`):
+  `id`, `family` (`technology|law|healthcare|design|culinary`), `icon`, `baseSalary` (RM/mo), `salaryRange: { entry: [min, max], mid: [min, max], senior: [min, max] }`, `salarySource`, `coreSkills: SkillId[]`, `i18n: Record<'en'|'ms', { title, subtitle, description, spmSubjects, preUPaths, uniExamples }>`.
+- **`Scenario`** (`src/content/scenarios/<careerId>.ts`):
+  `id`, `careerId`, `startNodeId`, `i18n: Record<'en'|'ms', { title, categoryBadge, description }>`, `nodes: ScenarioNode[]`.
+  Each `ScenarioNode` has `nodeId`, `type: 'decision'|'mentor'|'terminal'`, `i18n: Record<'en'|'ms', { prompt, npcName?, npcRole?, npcDialogue? }>`, `choices?: { choiceId, nextNodeId, isCorrect, skillImpacts: { skillId, xp, competencyDelta }[], i18n: Record<'en'|'ms', { label, explanation }> }[]`, `terminalOutcome?: { stars: 1|2|3, xpReward, i18n: Record<'en'|'ms', { title, summary }> }`.
+- **`Quiz`** (`src/content/quizzes/<careerId>.ts`):
+  `id`, `careerId`, `questions: QuizQuestion[]` (**exactly 5 questions** per quiz).
+  Each `QuizQuestion` has `id`, `skillId`, `i18n: Record<'en'|'ms', { question, options: { label: 'A'|'B'|'C'|'D', text, explanation }[] }>`, `correctLabel`.
+- **`StudyLesson`** (`src/content/studies/<careerId>.ts`):
+  `id`, `careerId`, `readMinutes`, `xpReward: 30`, `skillId`, `i18n: Record<'en'|'ms', { title, sections: { heading, body: string[], keyTerms?: { term, definition }[] }[] }>`.
+- **`OnboardingQuiz` & Scoring Matrix** (`src/content/onboarding-quiz.ts`):
+  - `questions` (length `8`): `id`, `i18n: Record<'en'|'ms', { prompt }>`, `options` (length `4`: `id`, `icon`, `primaryTrait: TraitId`, `secondaryTrait: TraitId`, `i18n: Record<'en'|'ms', { label }>`).
+  - `careerWeights` (keyed by all 5 `careerId`s): `subjectWeights: Partial<Record<SubjectId, 1|2|3>>`, `traitWeights: Partial<Record<TraitId, 1|2|3>>`.
+  - `matchReasonTemplates`: `Record<'en'|'ms', { twoSubjects: string, oneSubject: string, traitOnly: string, traitPhrases: Record<TraitId, string>, subjectLabels: Record<SubjectId, string> }>` (template-filled; no LLM).
 
 ---
 
-## 5. Database Schema & External APIs
-
-### 5.1 Supabase PostgreSQL Database DDL
-
-```sql
--- Supabase Core Schema for DreamPath
-
-CREATE TABLE profiles (
-  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-  username TEXT UNIQUE NOT NULL,
-  full_name TEXT,
-  avatar_url TEXT,
-  education_tier TEXT NOT NULL DEFAULT 'Nebula', -- Moonrise, Starlight, Aurora, Nebula, Galaxy
-  primary_career_id TEXT,
-  total_xp INTEGER NOT NULL DEFAULT 0,
-  simulated_salary INTEGER NOT NULL DEFAULT 0,
-  streak_days INTEGER NOT NULL DEFAULT 1,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-CREATE TABLE careers (
-  id TEXT PRIMARY KEY, -- e.g. 'software-developer'
-  title TEXT NOT NULL,
-  family TEXT NOT NULL,
-  tier INTEGER NOT NULL CHECK (tier BETWEEN 1 AND 5),
-  description TEXT NOT NULL,
-  base_salary INTEGER NOT NULL DEFAULT 5000,
-  onet_code TEXT,
-  esco_uri TEXT,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-CREATE TABLE skills (
-  id TEXT PRIMARY KEY, -- e.g. 'html-css'
-  name TEXT NOT NULL,
-  category TEXT NOT NULL
-);
-
-CREATE TABLE user_skills (
-  user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
-  skill_id TEXT REFERENCES skills(id) ON DELETE CASCADE,
-  xp INTEGER NOT NULL DEFAULT 0,
-  competency NUMERIC(5,2) NOT NULL DEFAULT 0.00,
-  PRIMARY KEY (user_id, skill_id)
-);
-
-CREATE TABLE quests (
-  id TEXT PRIMARY KEY,
-  career_id TEXT REFERENCES careers(id),
-  title TEXT NOT NULL,
-  description TEXT NOT NULL,
-  xp_reward INTEGER NOT NULL DEFAULT 50,
-  quest_type TEXT NOT NULL DEFAULT 'daily'
-);
-
-CREATE TABLE user_quests (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
-  quest_id TEXT REFERENCES quests(id) ON DELETE CASCADE,
-  status TEXT NOT NULL DEFAULT 'completed', -- 'active', 'completed'
-  completed_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-CREATE TABLE scenarios (
-  id TEXT PRIMARY KEY,
-  career_id TEXT REFERENCES careers(id),
-  title TEXT NOT NULL,
-  graph_json JSONB NOT NULL
-);
-
--- Enable Row Level Security (RLS)
-ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
-ALTER TABLE user_skills ENABLE ROW LEVEL SECURITY;
-ALTER TABLE user_quests ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Public profiles are readable by everyone" ON profiles FOR SELECT USING (true);
-CREATE POLICY "Users can update own profile" ON profiles FOR UPDATE USING (auth.uid() = id);
-CREATE POLICY "Users can read own skills" ON user_skills FOR SELECT USING (auth.uid() = user_id);
-CREATE POLICY "Users can read own quest history" ON user_quests FOR SELECT USING (auth.uid() = user_id);
-```
-
-### 5.2 External Dataset Ingestion Architecture
-
-DreamPath ingests data from **O*NET Web Services v2** and **ESCO APIs** into a unified internal representation:
-
-```typescript
-interface ExternalCareerRef {
-  source: 'onet' | 'esco';
-  externalId: string; // O*NET-SOC code (e.g. '15-1252.00') or ESCO URI
-  retrievedAt: string;
-}
-
-interface SkillRequirement {
-  skillId: string;
-  onetElementId?: string;
-  escoUri?: string;
-  importance: number; // 0-100
-  level: number; // 0-100
-}
-
-interface DreamPathCareer {
-  careerId: string;
-  title: string;
-  family: 'technology' | 'healthcare' | 'design' | 'law' | 'culinary';
-  tier: 1 | 2 | 3 | 4 | 5;
-  description: string;
-  dailyTasks: string[];
-  requiredSkills: SkillRequirement[];
-  externalRefs: ExternalCareerRef[];
-}
-```
+## 8. EN / BM i18n Rules
+- Supported locales: `'en'` (English) and `'ms'` (Bahasa Malaysia), persisted per user and switchable in Settings/Header.
+- All UI copy lives in `src/content/i18n/en.ts` and `src/content/i18n/ms.ts` with typed keys checked by TypeScript (`en` and `ms` must have identical key shapes).
+- All `Career`, `Scenario`, `Quiz`, and `StudyLesson` objects embed both `en` and `ms` fields; automated tests verify zero missing `ms` translations for shipped items.
+- Content workflow: AI-drafted in strict Zod schema → automated schema/i18n check → human owner + fluent Bahasa Malaysia spot-check before content freeze (1 week before deadline). Unreviewed content never ships.
 
 ---
 
-## 6. Step-by-Step Antigravity Implementation Roadmap
+## 9. Privacy & Data Protection Rules (Minors, Ages 13–15, PDPA)
+- **Minimal Collection:** Registration collects only `nickname` (`username`), `email`, `password`, and `consent_accepted_at` (`TIMESTAMPTZ`). Onboarding stores only `education_level`, `favourite_subjects`, and `active_career_id` (**never** raw quiz answers). Zero real-name, school, phone, age, or parent-contact fields in DB or UI.
+- **Consent:** Mandatory registration checkbox: *"I confirm I have my parent or guardian's permission to use DreamPath."* Timestamp stored in `profiles.consent_accepted_at`. Report documents that production requires verified parental consent and university ethics sign-off prior to under-18 testing.
+- **Account Deletion:** Settings → "Delete My Account" → user re-enters password → `POST /api/account/delete` verifies credentials and deletes the user via server-only `SUPABASE_SERVICE_ROLE_KEY`, cascading `profiles`, `user_progress`, and `user_skills`. Service-role key never enters client bundles.
+- **Public vs. Private Data (RLS):** `profiles` private columns (`email`, `consent_accepted_at`) are readable only by `auth.uid() = id`. The leaderboard reads a restricted public view exposing **only `username`, `avatar_char`, `total_xp`, `simulated_salary`, `active_career_id`** for seeded dummy accounts and real users with `leaderboard_opt_in = true` (default `false`).
+- **Demo & Testing Hygiene:** Seed scripts populate dummy test accounts only; zero real student data in screenshots, git, or public demos. Never send personal identifiers to any future LLM endpoint.
 
-### Phase 1: Scaffolding & Design System (Week 1)
-- [ ] Initialize Next.js 14 App Router project with TypeScript and Tailwind CSS.
-- [ ] Install shadcn/ui components (`button`, `card`, `progress`, `dialog`, `tabs`, `avatar`).
-- [ ] Set up global color variables for the 5 tiers (Moonrise silver, Starlight gold, Aurora mint, Nebula pink, Galaxy deep violet).
-- [ ] Build global bottom 5-tab persistent navigation bar and global header layout.
-- [ ] Implement local routing for `/onboarding` screens and `/home`.
+---
 
-### Phase 2: Game State & Simulation Engine (Week 2)
-- [ ] Implement Zustand stores (`useProgressionStore`, `useSimulationStore`, `useQuestStore`, `useSessionStore`) with `persist` middleware.
-- [ ] Integrate Ajv JSON Schema validator for career scenario graphs.
-- [ ] Build `/modes/simulation` engine component capable of parsing scenario nodes, rendering mentor dialogue, and executing choice branching.
-- [ ] Implement optimistic XP, skill competency, and virtual salary state updates.
-- [ ] Construct `/modes/quiz` component with star calculation algorithms (1–3 stars).
+## 10. UI Rules
+- **Single Design System (`DESIGN.md`):** Light theme first (`#fbf9f2` warm oat canvas, `#ffffff` cards, `#e8e5dc` hairlines, `#cfe2fa` sky primary, `#d3e8da` sage secondary, `#1b1c18` ink). **Strictly no clinical blue** (`#2563EB`, `#F1F5F9`) and no leftover dark-mode pages.
+- **Tokens Only & One Component Set:** All shared controls live in `src/components/ui/` using CSS/Tailwind theme tokens — no inline ad-hoc hex colors in pages.
+- **Layout & Typography:** `Plus Jakarta Sans` (`font-sans`), progressive rounding (`rounded-xl`–`rounded-3xl`), fixed 5-item sidebar (`Home`, `Explore Careers`, `Practice`, `Leaderboard`, `Profile` + bottom `Settings`), floating Ask Dreamy mascot/drawer.
 
-### Phase 3: Supabase Backend Integration (Week 3)
-- [ ] Deploy PostgreSQL schema, RLS policies, and triggers on Supabase.
-- [ ] Connect Supabase Auth for registration and login flows.
-- [ ] Create edge route handlers (`/api/mentor`, `/api/quests`) for syncing client progression events with PostgreSQL.
-- [ ] Seed career catalog with pre-computed O*NET/ESCO normalized dataset profiles.
+---
 
-### Phase 4: Polish, AI Mentorship & Micro-interactions (Week 4)
-- [ ] Integrate Vercel AI SDK for streaming mentor responses in `/modes/simulation` with fallback static nodes.
-- [ ] Add Framer Motion micro-animations for star rewards, level-up popups, and XP progress bar fills.
-- [ ] Build `/leaderboard` "Top Dreamers" component with real-time rankings by virtual salary.
-- [ ] Implement accessibility toggles (Read-Aloud speech synthesis, sound effects, reduce-motion) and Parent Controls overlay in `/settings`.
+## 11. Definition of Done
+1. Clean repo (`docs/CURRENT-STATE.md` issues resolved: no `/parent`, `/achievements`, unused scripts, or Next.js security error).
+2. Supabase Auth + RLS + seeded dummy data + password-confirmed cascading account deletion working end-to-end.
+3. Core loop (Study → 5-Q Quiz → Multi-node Scenario → XP/Salary/Level → Profile/Leaderboard) works identically for all 5 data-driven careers (`3` core at `>=3/3/3`, aiming `10/10/10`; `2` secondary at `2/2/2`) in `en` and `ms`.
+4. All game-math, scenario-graph integrity, and Zod/i18n content validation tests pass in Vitest; `tsc --noEmit`, ESLint, Prettier, and `next build` pass in GitHub Actions CI.
+5. Tested with dummy demo accounts and completed real-student user testing round after owner content review & freeze.
