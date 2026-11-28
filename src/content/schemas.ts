@@ -211,3 +211,64 @@ export const StudyLessonSchema = z.object({
 });
 
 export type StudyLessonContent = z.infer<typeof StudyLessonSchema>;
+
+export const TraitIdSchema = z.enum(["AN", "CR", "SO", "BU", "EN"]);
+export type TraitId = z.infer<typeof TraitIdSchema>;
+
+export const SubjectIdSchema = z.enum([
+  "Mathematics",
+  "Science",
+  "Computing & Tech",
+  "Languages",
+  "Art & Design",
+  "Business & Economics",
+]);
+export type SubjectId = z.infer<typeof SubjectIdSchema>;
+
+export const WeightValueSchema = z.union([z.literal(1), z.literal(2), z.literal(3)]);
+
+export const OnboardingOptionSchema = z.object({
+  id: z.string().min(1),
+  icon: z.string().min(1),
+  primaryTrait: TraitIdSchema,
+  secondaryTrait: TraitIdSchema,
+  i18n: z.object({
+    en: z.object({ label: z.string().min(1) }),
+    ms: z.object({ label: z.string().min(1) }),
+  }),
+});
+
+export const OnboardingQuestionSchema = z.object({
+  id: z.string().min(1),
+  i18n: z.object({
+    en: z.object({ prompt: z.string().min(1) }),
+    ms: z.object({ prompt: z.string().min(1) }),
+  }),
+  options: z.array(OnboardingOptionSchema).length(4),
+});
+
+export const CareerWeightEntrySchema = z.object({
+  subjectWeights: z.partialRecord(SubjectIdSchema, WeightValueSchema).optional(),
+  traitWeights: z.partialRecord(TraitIdSchema, WeightValueSchema).optional(),
+});
+
+const MatchReasonLocaleTemplateSchema = z.object({
+  twoSubjects: z.string().min(1),
+  oneSubject: z.string().min(1),
+  traitOnly: z.string().min(1),
+  traitPhrases: z.record(TraitIdSchema, z.string().min(1)),
+  subjectLabels: z.record(SubjectIdSchema, z.string().min(1)),
+});
+
+export const OnboardingQuizSchema = z.object({
+  questions: z.array(OnboardingQuestionSchema).length(8),
+  careerWeights: z.record(z.string().min(1), CareerWeightEntrySchema),
+  matchReasonTemplates: z.object({
+    en: MatchReasonLocaleTemplateSchema,
+    ms: MatchReasonLocaleTemplateSchema,
+  }),
+});
+
+export type OnboardingQuizData = z.infer<typeof OnboardingQuizSchema>;
+export type OnboardingQuestionContent = z.infer<typeof OnboardingQuestionSchema>;
+export type CareerWeightEntry = z.infer<typeof CareerWeightEntrySchema>;

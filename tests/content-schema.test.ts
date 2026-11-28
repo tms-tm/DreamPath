@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { CAREERS } from "@/content/careers";
+import { ONBOARDING_QUIZ } from "@/content/onboarding-quiz";
 import { en } from "@/content/i18n/en";
 import { ms } from "@/content/i18n/ms";
 import {
   CareerSchema,
+  OnboardingQuizSchema,
   QuizSchema,
   ScenarioSchema,
   StudyLessonSchema,
@@ -137,5 +139,18 @@ describe("content schemas & bilingual parity", () => {
       nodes: [],
     };
     expect(ScenarioSchema.safeParse(missingMsScenario).success).toBe(false);
+  });
+
+  it("validates 8x4 onboarding quiz, bilingual parity, and 100% 5-career matrix coverage", () => {
+    const parsed = OnboardingQuizSchema.safeParse(ONBOARDING_QUIZ);
+    expect(parsed.success).toBe(true);
+    expect(ONBOARDING_QUIZ.questions).toHaveLength(8);
+    for (const q of ONBOARDING_QUIZ.questions) {
+      expect(q.options).toHaveLength(4);
+    }
+
+    for (const career of CAREERS) {
+      expect(ONBOARDING_QUIZ.careerWeights[career.id]).toBeDefined();
+    }
   });
 });
