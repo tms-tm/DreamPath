@@ -2,24 +2,14 @@
 
 import React, { useState } from 'react';
 import { useProgressionStore } from '@/stores/useProgressionStore';
-import { EDUCATION_TIERS, TierId } from '@/types/career';
+import { EDUCATION_TIERS } from '@/types/career';
 
 export default function SettingsPage() {
-  const { profile, updateProfile, setSettings } = useProgressionStore();
+  const { profile, setSettings } = useProgressionStore();
 
-  const [showStagePicker, setShowStagePicker] = useState(false);
   const [showPersonalInfo, setShowPersonalInfo] = useState(false);
-  const [soundEffects, setSoundEffects] = useState(true);
-  const [reduceMotion, setReduceMotion] = useState(false);
-  const [savedNotice, setSavedNotice] = useState<string | null>(null);
 
-  const currentTier = EDUCATION_TIERS[profile.educationTier] || EDUCATION_TIERS.galaxy;
-
-  const handleSelectTier = (tierId: TierId) => {
-    updateProfile({ educationTier: tierId });
-    setSavedNotice(`Switched stage to ${EDUCATION_TIERS[tierId]?.name} Tier`);
-    setTimeout(() => setSavedNotice(null), 3000);
-  };
+  const currentTier = EDUCATION_TIERS[profile.educationTier] || EDUCATION_TIERS.nebula;
 
   const handleAudioNarrationToggle = (enabled: boolean) => {
     setSettings({ readAloudEnabled: enabled });
@@ -35,12 +25,6 @@ export default function SettingsPage() {
             Manage your learning journey stage, accessibility preferences, and student profile.
           </p>
         </div>
-        {savedNotice && (
-          <div className="px-3 py-1.5 rounded-lg bg-[#d3e8da] text-[#002113] text-xs font-semibold flex items-center gap-1.5 animate-fade-in">
-            <span className="material-symbols-outlined text-[16px]">check_circle</span>
-            <span>{savedNotice}</span>
-          </div>
-        )}
       </div>
 
       <div className="space-y-6">
@@ -59,64 +43,15 @@ export default function SettingsPage() {
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-bold text-[#1b1c18]">{currentTier.name} Tier</span>
                   <span className="text-xs font-semibold text-[#091d2e] bg-[#cfe2fa] px-2 py-0.5 rounded-full">
-                    Lv. {currentTier.id === 'moonrise' ? '1' : currentTier.id === 'starlight' ? '2' : currentTier.id === 'aurora' ? '3' : currentTier.id === 'nebula' ? '4' : '5'}
+                    Lv. {profile.currentLevel}
                   </span>
                 </div>
                 <p className="text-xs text-[#43474c] mt-0.5">
-                  Ages {currentTier.targetAge} ({currentTier.phase}) · Advanced career tracks &amp; mentor access
+                  {currentTier.targetAge} · {currentTier.gradeDesc}
                 </p>
               </div>
             </div>
-
-            <button
-              type="button"
-              onClick={() => setShowStagePicker(!showStagePicker)}
-              className="bg-[#cfe2fa] hover:bg-[#b5c8e0] text-[#091d2e] rounded-full px-4 py-2 text-xs font-bold leading-none tracking-[-0.01em] active:scale-[0.95] transition-all border-0 cursor-pointer shadow-xs"
-            >
-              {showStagePicker ? 'Hide Options' : 'Change Configuration'}
-            </button>
           </div>
-
-          {/* Expandable Stage Selection Grid */}
-          {showStagePicker && (
-            <div className="mt-4 pt-4 border-t border-[#e4e2dc] animate-fade-in">
-              <p className="text-xs font-medium text-[#43474c] mb-3">Select Learning Stage</p>
-              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
-                {[
-                  { id: 'moonrise', lv: 'Lv. 1', name: 'Moonrise', age: '4–6 yrs' },
-                  { id: 'starlight', lv: 'Lv. 2', name: 'Starlight', age: '7–9 yrs' },
-                  { id: 'aurora', lv: 'Lv. 3', name: 'Aurora', age: '10–12 yrs' },
-                  { id: 'nebula', lv: 'Lv. 4', name: 'Nebula', age: '13–15 yrs' },
-                  { id: 'galaxy', lv: 'Lv. 5', name: 'Galaxy', age: '16–18+ yrs' },
-                ].map((tier) => {
-                  const isSelected = profile.educationTier === tier.id;
-                  return (
-                    <button
-                      key={tier.id}
-                      type="button"
-                      onClick={() => handleSelectTier(tier.id as TierId)}
-                      className={`rounded-lg p-2.5 text-left transition ${
-                        isSelected
-                          ? 'border border-[#4e6074] bg-[#cfe2fa]/50 ring-1 ring-[#4e6074]/30'
-                          : 'border border-[#e4e2dc] hover:border-[#4e6074]/50 bg-[#ffffff]'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between text-[11px] font-semibold text-[#091d2e]">
-                        <span>{tier.lv}</span>
-                        {isSelected && (
-                          <span className="material-symbols-outlined text-[14px] text-[#4e6074]">
-                            check
-                          </span>
-                        )}
-                      </div>
-                      <div className="text-xs font-semibold text-[#1b1c18] mt-1">{tier.name}</div>
-                      <div className="text-[11px] text-[#43474c]">{tier.age}</div>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
         </section>
 
         {/* Section 2: Learning Experience & Accessibility */}
@@ -168,8 +103,8 @@ export default function SettingsPage() {
               <label className="relative inline-flex items-center cursor-pointer">
                 <input
                   type="checkbox"
-                  checked={soundEffects}
-                  onChange={(e) => setSoundEffects(e.target.checked)}
+                  checked={profile.soundEffectsEnabled}
+                  onChange={(e) => setSettings({ soundEffectsEnabled: e.target.checked })}
                   className="sr-only peer"
                 />
                 <div className="w-9 h-5 bg-[#e4e2dc] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-4 peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-[#e4e2dc] after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#4e6074]"></div>
@@ -192,8 +127,8 @@ export default function SettingsPage() {
               <label className="relative inline-flex items-center cursor-pointer">
                 <input
                   type="checkbox"
-                  checked={reduceMotion}
-                  onChange={(e) => setReduceMotion(e.target.checked)}
+                  checked={profile.reduceMotion}
+                  onChange={(e) => setSettings({ reduceMotion: e.target.checked })}
                   className="sr-only peer"
                 />
                 <div className="w-9 h-5 bg-[#e4e2dc] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-4 peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-[#e4e2dc] after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#4e6074]"></div>
@@ -241,21 +176,13 @@ export default function SettingsPage() {
               {showPersonalInfo && (
                 <div className="mt-3 pt-3 border-t border-[#e4e2dc] text-xs space-y-1.5 animate-fade-in">
                   <div className="flex justify-between items-center">
-                    <span className="text-[#43474c]">Full Name:</span>
+                    <span className="text-[#43474c]">Nickname:</span>
                     <span className="font-medium text-[#1b1c18]">{profile.name}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-[#43474c]">Age:</span>
-                    <span className="font-medium text-[#1b1c18]">17</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-[#43474c]">School / Academy:</span>
-                    <span className="font-medium text-[#1b1c18]">SMK Bandar Utama Damansara</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-[#43474c]">Education Level:</span>
                     <span className="font-medium text-[#1b1c18]">
-                      Upper Secondary ({currentTier.name} Tier)
+                      {currentTier.name} Tier ({currentTier.gradeDesc})
                     </span>
                   </div>
                 </div>
@@ -270,7 +197,7 @@ export default function SettingsPage() {
                 </div>
                 <div>
                   <span className="text-sm font-medium text-[#1b1c18] block">Account &amp; Password</span>
-                  <p className="text-xs text-[#43474c] mt-0.5">alex.rivera@example.com</p>
+                  <p className="text-xs text-[#43474c] mt-0.5">{profile.handle}</p>
                 </div>
               </div>
               <button

@@ -31,11 +31,10 @@ export default function ProfilePage() {
             <div>
               <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-[#cfe2fa] text-[#36485c] text-[12px] font-semibold">
                 <span className="material-symbols-outlined text-[14px]">military_tech</span>
-                Galaxy Tier · Lv. 4
+                Nebula Tier · Lv. {profile.currentLevel}
               </span>
             </div>
-            <p className="text-[14px] text-[#43474c] mt-0.5">SMK Bandar Utama Damansara</p>
-            <p className="text-[14px] font-medium text-[#4e6074]">
+            <p className="text-[14px] font-medium text-[#4e6074] mt-0.5">
               Target career: Software Engineer
             </p>
           </div>

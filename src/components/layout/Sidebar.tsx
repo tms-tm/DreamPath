@@ -9,7 +9,7 @@ import { EDUCATION_TIERS } from '@/types/career';
 export function Sidebar() {
   const pathname = usePathname();
   const { profile } = useProgressionStore();
-  const tier = EDUCATION_TIERS[profile.educationTier] || EDUCATION_TIERS.aurora;
+  const tier = EDUCATION_TIERS[profile.educationTier] || EDUCATION_TIERS.nebula;
 
   const navLinks = [
     { label: 'Home', href: '/', icon: 'home' },
