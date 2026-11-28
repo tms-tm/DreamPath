@@ -11,7 +11,6 @@ export interface UserProfile {
   name: string;
   handle: string;
   avatarChar: string;
-  age: number;
   joinedDate: string;
   currentLevel: number;
   educationTier: TierId;
@@ -19,20 +18,9 @@ export interface UserProfile {
   readAloudEnabled: boolean;
   soundEffectsEnabled: boolean;
   reduceMotion: boolean;
-  colorMode: 'dark' | 'light';
   streakDays: number;
   missionsCompleted: number;
   learningTimeMinutes: number;
-}
-
-export interface AchievementItem {
-  id: string;
-  title: string;
-  desc: string;
-  unlocked: boolean;
-  icon: string;
-  tier: string;
-  unlockedAt?: string;
 }
 
 interface ProgressionState {
@@ -40,13 +28,10 @@ interface ProgressionState {
   totalXp: number;
   simulatedSalary: number;
   skills: Record<SkillId, SkillProgress>;
-  achievements: AchievementItem[];
   careerProgress: Record<string, number>; // careerId -> progressPercent
   completedQuests: string[];
   
   // Actions
-  setColorMode: (mode: 'dark' | 'light') => void;
-  toggleColorMode: () => void;
   setEducationTier: (tier: TierId) => void;
   setActiveCareer: (careerId: string) => void;
   setSettings: (settings: Partial<Pick<UserProfile, 'readAloudEnabled' | 'soundEffectsEnabled' | 'reduceMotion'>>) => void;
@@ -55,114 +40,44 @@ interface ProgressionState {
   applySkillImpacts: (impacts: Array<{ skillId: SkillId; xp: number; competencyDelta?: number }>) => void;
   applyReward: (reward: { xp?: number; salaryDelta?: number; missionCountDelta?: number }) => void;
   completeQuest: (questId: string, xpReward: number) => void;
-  unlockAchievement: (achievementId: string) => void;
   calculateSalary: () => number;
 }
-
-export const INITIAL_ACHIEVEMENTS: AchievementItem[] = [
-  {
-    id: 'cyber-guardian',
-    title: 'Cyber Guardian',
-    desc: 'Block your first SQL breach in simulation',
-    unlocked: true,
-    icon: 'ShieldCheck',
-    tier: 'Gold',
-    unlockedAt: 'Yesterday',
-  },
-  {
-    id: 'sharp-advocate',
-    title: 'Sharp Advocate',
-    desc: 'Win a defense case with objective evidence',
-    unlocked: true,
-    icon: 'Scale',
-    tier: 'Silver',
-    unlockedAt: '3 days ago',
-  },
-  {
-    id: 'careful-clinician',
-    title: 'Careful Clinician',
-    desc: 'Choose safe antibiotic treatment in medical round',
-    unlocked: true,
-    icon: 'HeartPulse',
-    tier: 'Bronze',
-    unlockedAt: '1 week ago',
-  },
-  {
-    id: 'master-architect',
-    title: 'Code Architect',
-    desc: 'Implement responsive accessibility rules across 5 apps',
-    unlocked: false,
-    icon: 'Code2',
-    tier: 'Gold',
-  },
-  {
-    id: 'streak-master',
-    title: 'Week Explorer',
-    desc: 'Maintain a 7-day exploration streak',
-    unlocked: true,
-    icon: 'Flame',
-    tier: 'Gold',
-    unlockedAt: 'Today',
-  },
-  {
-    id: 'plan-b-strategist',
-    title: 'Plan B Strategist',
-    desc: 'Explore alternative vocational paths across 3 distinct fields',
-    unlocked: false,
-    icon: 'Compass',
-    tier: 'Platinum',
-  },
-];
 
 export const useProgressionStore = create<ProgressionState>()(
   persist(
     (set, get) => ({
       profile: {
-        name: 'Alex Rivera',
-        handle: '@alexdreams',
-        avatarChar: 'A',
-        age: 11,
-        joinedDate: '12 January 2025',
-        currentLevel: 4,
-        educationTier: 'aurora',
+        name: 'Demo Student',
+        handle: '@demostudent',
+        avatarChar: 'D',
+        joinedDate: '2026',
+        currentLevel: 1,
+        educationTier: 'nebula',
         activeCareerId: 'software-engineer',
         readAloudEnabled: true,
         soundEffectsEnabled: true,
         reduceMotion: false,
-        colorMode: 'dark',
-        streakDays: 7,
-        missionsCompleted: 24,
-        learningTimeMinutes: 272, // 4h 32m
+        streakDays: 0,
+        missionsCompleted: 0,
+        learningTimeMinutes: 0,
       },
-      totalXp: 1280,
-      simulatedSalary: 2160,
+      totalXp: 0,
+      simulatedSalary: 1860,
       skills: {
-        'html-css': { xp: 450, competency: 78 },
-        javascript: { xp: 320, competency: 55 },
-        'problem-solving': { xp: 510, competency: 82 },
-        communication: { xp: 260, competency: 64 },
-        accessibility: { xp: 190, competency: 48 },
+        'html-css': { xp: 0, competency: 0 },
+        javascript: { xp: 0, competency: 0 },
+        'problem-solving': { xp: 0, competency: 0 },
+        communication: { xp: 0, competency: 0 },
+        accessibility: { xp: 0, competency: 0 },
       },
-      achievements: INITIAL_ACHIEVEMENTS,
       careerProgress: {
-        'software-engineer': 38,
-        'junior-lawyer': 12,
-        'future-doctor': 25,
-        'product-designer': 20,
-        'master-chef': 10,
+        'software-engineer': 0,
+        'junior-lawyer': 0,
+        'future-doctor': 0,
+        'product-designer': 0,
+        'master-chef': 0,
       },
-      completedQuests: ['quest-btn-1'],
-
-      setColorMode: (mode) =>
-        set((state) => ({ profile: { ...state.profile, colorMode: mode } })),
-
-      toggleColorMode: () =>
-        set((state) => ({
-          profile: {
-            ...state.profile,
-            colorMode: state.profile.colorMode === 'dark' ? 'light' : 'dark',
-          },
-        })),
+      completedQuests: [],
 
       setEducationTier: (tier) =>
         set((state) => ({ profile: { ...state.profile, educationTier: tier } })),
@@ -241,13 +156,6 @@ export const useProgressionStore = create<ProgressionState>()(
             },
           };
         }),
-
-      unlockAchievement: (id) =>
-        set((state) => ({
-          achievements: state.achievements.map((a) =>
-            a.id === id ? { ...a, unlocked: true, unlockedAt: 'Just now' } : a
-          ),
-        })),
 
       calculateSalary: () => {
         const state = get();

@@ -1,4 +1,4 @@
-export type TierId = 'moonrise' | 'starlight' | 'aurora' | 'nebula' | 'galaxy';
+export type TierId = 'nebula';
 
 export interface EducationTier {
   id: TierId;
@@ -6,14 +6,6 @@ export interface EducationTier {
   targetAge: string;
   gradeDesc: string;
   phase: string;
-  primaryColor: string;
-  accentColor: string;
-  bgDark: string;
-  bgLight: string;
-  cardBg: string;
-  borderSubtle: string;
-  textColor: string;
-  minTapTarget: string;
   description: string;
   quizQuestionsCount: number;
   xpPerQuiz: number;
@@ -21,100 +13,16 @@ export interface EducationTier {
 }
 
 export const EDUCATION_TIERS: Record<TierId, EducationTier> = {
-  moonrise: {
-    id: 'moonrise',
-    name: 'Moonrise',
-    targetAge: 'Ages 4–6',
-    gradeDesc: 'Pre-school',
-    phase: 'Discover',
-    primaryColor: '#1A2455',
-    accentColor: '#60A5FA',
-    bgDark: '#0B112C',
-    bgLight: '#F0F4FF',
-    cardBg: '#131B42',
-    borderSubtle: '#23306B',
-    textColor: '#E0E7FF',
-    minTapTarget: 'h-16 w-16 text-lg',
-    description: 'Silver dusk theme, large friendly tap targets, full audio support, playful star exploration.',
-    quizQuestionsCount: 3,
-    xpPerQuiz: 10,
-    checkpointXp: 20,
-  },
-  starlight: {
-    id: 'starlight',
-    name: 'Starlight',
-    targetAge: 'Ages 7–9',
-    gradeDesc: 'Lower Primary',
-    phase: 'Explore',
-    primaryColor: '#231C52',
-    accentColor: '#FFD166',
-    bgDark: '#0D0924',
-    bgLight: '#F7F5FF',
-    cardBg: '#1B1440',
-    borderSubtle: '#362973',
-    textColor: '#F3E8FF',
-    minTapTarget: 'h-14 w-14',
-    description: 'Indigo night & Gold sparkle, joyful guidance with interactive audio read-aloud.',
-    quizQuestionsCount: 4,
-    xpPerQuiz: 20,
-    checkpointXp: 40,
-  },
-  aurora: {
-    id: 'aurora',
-    name: 'Aurora',
-    targetAge: 'Ages 10–12',
-    gradeDesc: 'Upper Primary',
-    phase: 'Connect',
-    primaryColor: '#0C3140',
-    accentColor: '#4DF0C0',
-    bgDark: '#061922',
-    bgLight: '#F0FDF9',
-    cardBg: '#0F3B4E',
-    borderSubtle: '#1C5B77',
-    textColor: '#E6FFFA',
-    minTapTarget: 'h-12 w-12',
-    description: 'Night teal & Mint glow, hands-on logic puzzles and expanding career realms.',
-    quizQuestionsCount: 5,
-    xpPerQuiz: 30,
-    checkpointXp: 60,
-  },
   nebula: {
     id: 'nebula',
     name: 'Nebula',
     targetAge: 'Ages 13–15',
-    gradeDesc: 'Lower Secondary',
-    phase: 'Plan',
-    primaryColor: '#34154A',
-    accentColor: '#FF6FD8',
-    bgDark: '#1E0A2D',
-    bgLight: '#FDF4FB',
-    cardBg: '#3F195B',
-    borderSubtle: '#62268D',
-    textColor: '#FCE7F3',
-    minTapTarget: 'h-11 w-11',
-    description: 'Plum night & Neon Pink, goal-setting roadmaps, realistic case studies and subject path mapping.',
-    quizQuestionsCount: 6,
+    gradeDesc: 'Lower Secondary (Form 1–3)',
+    phase: 'Explore & Plan',
+    description: 'Goal-setting roadmaps, realistic case studies, and Malaysian SPM subject path mapping.',
+    quizQuestionsCount: 5,
     xpPerQuiz: 40,
     checkpointXp: 80,
-  },
-  galaxy: {
-    id: 'galaxy',
-    name: 'Galaxy',
-    targetAge: 'Ages 16–18+',
-    gradeDesc: 'Upper Secondary / Foundation',
-    phase: 'Decide',
-    primaryColor: '#1F1456',
-    accentColor: '#FBBF24',
-    bgDark: '#0F0933',
-    bgLight: '#FAF9FF',
-    cardBg: '#281B6D',
-    borderSubtle: '#432EAB',
-    textColor: '#F5F3FF',
-    minTapTarget: 'h-10 w-10',
-    description: 'Deep violet & Gold core, full virtual salary leaderboard, verified credentials & Plan B contingency mapping.',
-    quizQuestionsCount: 7,
-    xpPerQuiz: 50,
-    checkpointXp: 100,
   },
 };
 
