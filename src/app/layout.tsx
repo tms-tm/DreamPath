@@ -4,7 +4,7 @@ import { AppShell } from '@/components/layout/AppShell';
 
 export const metadata: Metadata = {
   title: 'DreamPath — Student Career Exploration Dashboard',
-  description: 'Explore real-world careers, interactive simulations, and skill journeys across Moonrise, Starlight, Aurora, Nebula, and Galaxy educational tiers.',
+  description: 'Explore real-world careers, interactive simulations, and skill journeys for Malaysian lower-secondary students (Nebula tier, ages 13–15, Form 1–3).',
 };
 
 export default function RootLayout({
