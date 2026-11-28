@@ -15,7 +15,7 @@ const TOTAL_STEPS = 6;
 
 export function OnboardingShell({ step, title, subtitle, children }: OnboardingShellProps) {
   return (
-    <div className="max-w-3xl mx-auto py-6 px-4 space-y-6 animate-fade-in">
+    <div className="max-w-3xl w-full mx-auto py-4 sm:py-6 px-3 sm:px-4 space-y-5 sm:space-y-6 animate-fade-in overflow-x-hidden">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <Badge variant="sky">
           <Sparkles className="w-3.5 h-3.5" aria-hidden="true" />
@@ -44,10 +44,10 @@ export function OnboardingShell({ step, title, subtitle, children }: OnboardingS
       </div>
 
       <div className="space-y-1.5">
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-on-surface tracking-tight">
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-on-surface tracking-tight break-words">
           {title}
         </h1>
-        {subtitle && <p className="text-sm text-on-surface-variant">{subtitle}</p>}
+        {subtitle && <p className="text-xs sm:text-sm text-on-surface-variant break-words">{subtitle}</p>}
       </div>
 
       {children}

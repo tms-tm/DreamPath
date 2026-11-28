@@ -1,7 +1,11 @@
 'use client';
 
 import React, { useState } from 'react';
-import { CAREERS, UNIS, SPM_REQUIREMENTS } from '@/types/dreamy';
+import { Check, GraduationCap } from 'lucide-react';
+import { Badge } from '@/components/ui';
+import { CAREERS, getCareerById } from '@/content/careers';
+import { DREAMY_KB, getDreamyCareer } from '@/content/dreamy-kb';
+import { useSettingsStore } from '@/features/settings/useSettingsStore';
 
 interface CourseRouteCardProps {
   careerKey?: string;
@@ -9,67 +13,98 @@ interface CourseRouteCardProps {
 }
 
 export function CourseRouteCard({
-  careerKey = 'se',
-  initialUni = 'um',
+  careerKey = 'software-engineer',
+  initialUni,
 }: CourseRouteCardProps) {
-  const [selectedUni, setSelectedUni] = useState(initialUni);
-  const career = CAREERS[careerKey] || CAREERS.se;
-  const uni = UNIS[selectedUni] || UNIS.um;
-  const route = career.routes[selectedUni] || career.routes.um;
-  const requirements = SPM_REQUIREMENTS[route.spm] || SPM_REQUIREMENTS.sciPublic;
+  const { locale } = useSettingsStore();
+
+  const activeCareer = getCareerById(careerKey) ?? CAREERS[0];
+  const dreamyEntry = getDreamyCareer(activeCareer.id) ?? DREAMY_KB['software-engineer'];
+
+  const routes = dreamyEntry.routes;
+  const initialKey =
+    initialUni && routes.some((r) => r.uniKey === initialUni)
+      ? initialUni
+      : routes[0]?.uniKey ?? 'um';
+
+  const [selectedUniKey, setSelectedUniKey] = useState(initialKey);
+
+  const selectedRoute =
+    routes.find((r) => r.uniKey === selectedUniKey) ?? routes[0];
+
+  const t = {
+    en: {
+      title: (name: string) => `How to become a ${name}`,
+      public: 'Public University',
+      private: 'Private University',
+      spmTitle: "From SPM, you'll usually need:",
+      pathwayTitle: 'Study Pathway',
+      step1: 'Step 1: Pre-U / Foundation',
+      step2: 'Step 2: University Degree',
+      duration: 'Duration:',
+    },
+    ms: {
+      title: (name: string) => `Laluan menjadi seorang ${name}`,
+      public: 'Universiti Awam',
+      private: 'Universiti Swasta',
+      spmTitle: 'Kelayakan lazim lepasan SPM:',
+      pathwayTitle: 'Laluan Pengajian',
+      step1: 'Langkah 1: Pra-U / Asasi / Diploma',
+      step2: 'Langkah 2: Ijazah Sarjana Muda',
+      duration: 'Tempoh:',
+    },
+  }[locale];
+
+  if (!selectedRoute) return null;
 
   return (
-    <div className="bg-white border border-[#E8E5DC] rounded-2xl p-5 shadow-sm space-y-4 max-w-full">
-      {/* Card Header */}
-      <div className="flex items-center justify-between flex-wrap gap-2 pb-2 border-b border-[#E8E5DC]">
-        <h3 className="text-base font-bold text-[#1E3A8A]">
-          How to become a {career.name}
+    <div className="bg-surface-container-lowest border border-hairline rounded-2xl p-5 shadow-soft space-y-4 max-w-full">
+      {/* Header */}
+      <div className="flex items-center justify-between flex-wrap gap-2 pb-2 border-b border-hairline">
+        <h3 className="text-base font-bold text-on-surface">
+          {t.title(activeCareer.i18n[locale].title)}
         </h3>
-        <span className="bg-[#CFE2FA] text-[#1E3A8A] text-xs font-semibold px-3 py-1 rounded-full">
-          {uni.type}
-        </span>
+        <Badge variant={selectedRoute.uniType === 'public' ? 'sky' : 'sage'}>
+          {selectedRoute.uniType === 'public' ? t.public : t.private}
+        </Badge>
       </div>
 
-      {/* 4 Equal Tabs: UM, UiTM, Sunway, MMU */}
-      <div className="grid grid-cols-4 gap-2">
-        {Object.entries(UNIS).map(([key, u]) => {
-          const isSelected = selectedUni === key;
+      {/* University Tabs */}
+      <div className="flex flex-wrap gap-2">
+        {routes.map((route) => {
+          const isSelected = route.uniKey === selectedRoute.uniKey;
           return (
             <button
-              key={key}
+              key={route.uniKey}
               type="button"
-              onClick={() => setSelectedUni(key)}
-              className={`py-2 text-center text-xs sm:text-sm rounded-xl transition-all cursor-pointer font-bold ${
+              onClick={() => setSelectedUniKey(route.uniKey)}
+              className={`py-1.5 px-3 text-xs rounded-xl font-bold transition-all cursor-pointer ${
                 isSelected
-                  ? 'bg-[#CFE2FA] text-[#1E3A8A] border border-[#CFE2FA] shadow-xs'
-                  : 'bg-white text-[#334155] border border-[#E8E5DC] hover:bg-[#F8FAFC]'
+                  ? 'bg-primary-container text-on-primary-fixed border border-primary/20 shadow-soft'
+                  : 'bg-surface-container-low text-on-surface-variant border border-hairline hover:bg-surface-container'
               }`}
             >
-              {u.short}
+              {route.uniName}
             </button>
           );
         })}
       </div>
 
       {/* University Note Line */}
-      <p className="text-xs sm:text-sm text-[#1E3A8A] font-semibold bg-[#F8FAFC] p-2.5 rounded-xl border border-[#E8E5DC]/60 flex items-center gap-2">
-        <span className="material-symbols-outlined text-[18px] text-[#1E3A8A]">school</span>
-        <span>
-          {uni.name} — {uni.apply}
-        </span>
-      </p>
+      <div className="text-xs text-on-surface bg-surface-container-low p-3 rounded-xl border border-hairline flex items-start gap-2.5">
+        <GraduationCap className="w-4 h-4 text-primary shrink-0 mt-0.5" aria-hidden="true" />
+        <span>{selectedRoute.i18n[locale].applicationNote}</span>
+      </div>
 
-      {/* Requirements Section in ONE column with navy ticks */}
+      {/* SPM Requirements */}
       <div className="space-y-2 pt-1">
-        <h4 className="text-xs font-bold text-[#64748B] uppercase tracking-wider">
-          From SPM, you&apos;ll usually need
+        <h4 className="text-xs font-bold text-on-surface-variant uppercase tracking-wider">
+          {t.spmTitle}
         </h4>
-        <div className="space-y-1.5 text-xs sm:text-sm text-[#334155]">
-          {requirements.map((req, idx) => (
-            <div key={idx} className="flex items-center gap-2.5">
-              <span className="material-symbols-outlined text-[16px] text-[#1E3A8A] font-bold shrink-0">
-                check
-              </span>
+        <div className="space-y-1.5 text-xs sm:text-sm text-on-surface">
+          {selectedRoute.i18n[locale].spmRequirements.map((req, idx) => (
+            <div key={idx} className="flex items-start gap-2">
+              <Check className="w-4 h-4 text-secondary shrink-0 mt-0.5" aria-hidden="true" />
               <span>{req}</span>
             </div>
           ))}
@@ -77,54 +112,42 @@ export function CourseRouteCard({
       </div>
 
       {/* Pathway Steps (Pre-U and Degree) */}
-      <div className="space-y-2 pt-2">
-        <h4 className="text-xs font-bold text-[#64748B] uppercase tracking-wider">
-          Study Pathway
+      <div className="space-y-2 pt-2 border-t border-hairline">
+        <h4 className="text-xs font-bold text-on-surface-variant uppercase tracking-wider">
+          {t.pathwayTitle}
         </h4>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {/* Step 1: Pre-U */}
-          <div className="p-3 rounded-xl bg-[#F8FAFC] border border-[#E8E5DC] flex flex-col justify-between">
+          {/* Step 1 */}
+          <div className="p-3.5 rounded-xl bg-surface-container-low border border-hairline flex flex-col justify-between space-y-2">
             <div>
-              <span className="text-[11px] font-bold text-[#1E3A8A] uppercase tracking-wide">
-                Step 1: Pre-U / Foundation
+              <span className="text-[11px] font-bold text-primary uppercase tracking-wide">
+                {t.step1}
               </span>
-              <p className="text-xs sm:text-sm font-bold text-[#1E3A8A] mt-1">
-                {route.preU[0]}
+              <p className="text-xs sm:text-sm font-bold text-on-surface mt-1">
+                {selectedRoute.i18n[locale].preU.name}
               </p>
             </div>
-            <span className="text-xs text-[#64748B] mt-2 font-medium">
-              Duration: {route.preU[1]}
+            <span className="text-xs text-on-surface-variant font-medium">
+              {t.duration} {selectedRoute.i18n[locale].preU.duration}
             </span>
           </div>
 
-          {/* Step 2: Degree */}
-          <div className="p-3 rounded-xl bg-[#F8FAFC] border border-[#E8E5DC] flex flex-col justify-between">
+          {/* Step 2 */}
+          <div className="p-3.5 rounded-xl bg-surface-container-low border border-hairline flex flex-col justify-between space-y-2">
             <div>
-              <span className="text-[11px] font-bold text-[#1E3A8A] uppercase tracking-wide">
-                Step 2: Degree
+              <span className="text-[11px] font-bold text-secondary uppercase tracking-wide">
+                {t.step2}
               </span>
-              <p className="text-xs sm:text-sm font-bold text-[#1E3A8A] mt-1">
-                {route.degree[0]}
+              <p className="text-xs sm:text-sm font-bold text-on-surface mt-1">
+                {selectedRoute.i18n[locale].degree.name}
               </p>
             </div>
-            <span className="text-xs text-[#64748B] mt-2 font-medium">
-              Duration: {route.degree[1]}
+            <span className="text-xs text-on-surface-variant font-medium">
+              {t.duration} {selectedRoute.i18n[locale].degree.duration}
             </span>
           </div>
         </div>
       </div>
-
-      {/* Total Time Line */}
-      <div className="flex items-center justify-between text-xs sm:text-sm p-3 rounded-xl bg-[#CFE2FA]/50 border border-[#CFE2FA] text-[#1E3A8A]">
-        <span className="font-semibold">Total time to qualification</span>
-        <strong className="font-extrabold">{route.total}</strong>
-      </div>
-
-      {/* Disclaimer */}
-      <p className="text-xs text-[#64748B] pt-1 flex items-center gap-1.5">
-        <span className="material-symbols-outlined text-[15px]">info</span>
-        <span>Requirements change every intake. Check the university&apos;s website before you apply.</span>
-      </p>
     </div>
   );
 }

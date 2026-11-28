@@ -272,3 +272,55 @@ export const OnboardingQuizSchema = z.object({
 export type OnboardingQuizData = z.infer<typeof OnboardingQuizSchema>;
 export type OnboardingQuestionContent = z.infer<typeof OnboardingQuestionSchema>;
 export type CareerWeightEntry = z.infer<typeof CareerWeightEntrySchema>;
+
+export const DreamyUniversityRouteSchema = z.object({
+  uniKey: z.string().min(1),
+  uniName: z.string().min(1),
+  uniType: z.enum(["public", "private"]),
+  i18n: z.object({
+    en: z.object({
+      applicationNote: z.string().min(1),
+      spmRequirements: z.array(z.string().min(1)).min(1),
+      preU: z.object({ name: z.string().min(1), duration: z.string().min(1) }),
+      degree: z.object({ name: z.string().min(1), duration: z.string().min(1) }),
+    }),
+    ms: z.object({
+      applicationNote: z.string().min(1),
+      spmRequirements: z.array(z.string().min(1)).min(1),
+      preU: z.object({ name: z.string().min(1), duration: z.string().min(1) }),
+      degree: z.object({ name: z.string().min(1), duration: z.string().min(1) }),
+    }),
+  }),
+});
+
+export const DreamyCareerEntrySchema = z.object({
+  careerId: z.string().min(1),
+  salaryRange: z.object({
+    entry: SalaryBandSchema,
+    mid: SalaryBandSchema,
+    senior: SalaryBandSchema,
+  }),
+  salarySource: z.string().min(1),
+  estimatedBadge: z.literal("Estimated (MY)"),
+  i18n: z.object({
+    en: z.object({
+      title: z.string().min(1),
+      subtitle: z.string().min(1),
+      summary: z.string().min(1),
+      matchReason: z.string().min(1),
+    }),
+    ms: z.object({
+      title: z.string().min(1),
+      subtitle: z.string().min(1),
+      summary: z.string().min(1),
+      matchReason: z.string().min(1),
+    }),
+  }),
+  routes: z.array(DreamyUniversityRouteSchema).min(1),
+});
+
+export const DreamyKBSchema = z.record(z.string().min(1), DreamyCareerEntrySchema);
+export type DreamyUniversityRoute = z.infer<typeof DreamyUniversityRouteSchema>;
+export type DreamyCareerEntry = z.infer<typeof DreamyCareerEntrySchema>;
+export type DreamyKBData = z.infer<typeof DreamyKBSchema>;
+

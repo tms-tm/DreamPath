@@ -5,36 +5,40 @@ import { DreamyMascot } from '@/components/dreamy/DreamyMascot';
 import { CareerMatchesCard } from '@/components/dreamy/cards/CareerMatchesCard';
 import { CourseRouteCard } from '@/components/dreamy/cards/CourseRouteCard';
 import { SalaryCard } from '@/components/dreamy/cards/SalaryCard';
-import { CAREERS, ChatMessage } from '@/types/dreamy';
+import { CAREERS, getCareerById } from '@/content/careers';
+import { detectIntent } from '@/features/dreamy/intentMatcher';
+import { useProfileStore } from '@/features/profile/useProfileStore';
+import { useSettingsStore } from '@/features/settings/useSettingsStore';
 
-const INITIAL_MESSAGES: ChatMessage[] = [
-  {
-    id: 'msg-0',
-    sender: 'dreamy',
-    text: "Hi Alex! I'm Dreamy. I can match careers to your skills, show you the routes from SPM to university, and tell you what a job pays when you start. What would you like to explore?",
-  },
-];
+interface ChatMessage {
+  id: string;
+  sender: 'user' | 'dreamy';
+  text?: string;
+  cardType?: 'matches' | 'route' | 'salary';
+  careerKey?: string;
+  uniKey?: string;
+}
 
 const STORAGE_KEY = 'dreampath_dreamy_pos';
 
-const AMBIENT_TIPS = [
-  "Hi! I'm Dreamy.",
-  'Want your top 3 matches?',
-  'Ask me what a job pays.',
-  'I can map your route from SPM.',
-  'You can drag me anywhere.',
-];
-
 export function AskDreamyOverlay() {
+  const { nickname, activeCareerId } = useProfileStore();
+  const { locale } = useSettingsStore();
+
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState<ChatMessage[]>(INITIAL_MESSAGES);
+  const [messages, setMessages] = useState<ChatMessage[]>([
+    {
+      id: 'msg-0',
+      sender: 'dreamy',
+    },
+  ]);
   const [inputText, setInputText] = useState('');
   const [isThinking, setIsThinking] = useState(false);
   const [thinkingLabel, setThinkingLabel] = useState('thinking...');
   const [mascotMood, setMascotMood] = useState<
     'idle' | 'listening' | 'happy' | 'thinking' | 'surprised'
   >('idle');
-  const [currentCareer, setCurrentCareer] = useState<string>('se');
+  const [currentCareer, setCurrentCareer] = useState<string>(activeCareerId || 'software-engineer');
 
   // Interactive Mascot State
   const [isReady, setIsReady] = useState(false);
@@ -52,7 +56,7 @@ export function AskDreamyOverlay() {
   const ambientIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const tipIndexRef = useRef(0);
 
-  // Drag physics refs (pure ref updates for 60fps zero-state-lag dragging)
+  // Drag physics refs
   const wrapperRef = useRef<HTMLDivElement>(null);
   const posRef = useRef({ x: 0, y: 0 });
   const tiltRef = useRef(0);
@@ -70,7 +74,62 @@ export function AskDreamyOverlay() {
   const chatBottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Say an ambient speech bubble and wave
+  const t = {
+    en: {
+      initialGreeting: `Hi ${nickname}! I'm Dreamy. I can match careers to your skills, show you the routes from SPM to university, and tell you what a job pays when you start. What would you like to explore?`,
+      ambientTips: [
+        `Hi ${nickname}! I'm Dreamy.`,
+        'Want your top 3 matches?',
+        'Ask me what a job pays.',
+        'I can map your route from SPM.',
+        'You can drag me anywhere.',
+      ],
+      chipMatches: 'Career matches',
+      chipRoute: 'Course pathway',
+      chipSalary: 'Starting salary',
+      placeholder: 'Ask Dreamy a question...',
+      status: 'Career counsellor • online',
+      matchesText: 'Here are the top careers that best match the skills you demonstrated in Practice Modes!',
+      routeText: (name: string) =>
+        `There's more than one way to become a ${name}. Pick a university below to see the usual route after SPM.`,
+      salaryText: (name: string) =>
+        `Here's what a ${name} usually earns in their first job, and how pay grows with experience.`,
+      greetText: `Hello ${nickname}! What would you like to explore today? You can ask about career matches, courses after SPM, or starting salaries.`,
+      helpText:
+        'I can help map your path after SPM, show starting salaries, or match careers to your skills. Try asking about Software Engineering, Junior Lawyer, Future Doctor, Product Designer, or Master Chef!',
+      disclaimer: 'Dreamy can make mistakes. Double-check with your teacher or counsellor.',
+      newChat: 'New Chat',
+      close: 'Close Dreamy',
+    },
+    ms: {
+      initialGreeting: `Hai ${nickname}! Saya Dreamy. Saya boleh padankan kerjaya dengan kemahiran anda, tunjukkan laluan dari SPM ke universiti, dan beritahu anggaran gaji permulaan. Apa yang anda ingin terokai?`,
+      ambientTips: [
+        `Hai ${nickname}! Saya Dreamy.`,
+        'Ingin tahu 3 padanan anda?',
+        'Tanya anggaran gaji kerjaya.',
+        'Saya boleh petakan laluan SPM.',
+        'Anda boleh seret saya ke mana-mana.',
+      ],
+      chipMatches: 'Padanan kerjaya',
+      chipRoute: 'Laluan kursus',
+      chipSalary: 'Gaji permulaan',
+      placeholder: 'Tanya Dreamy sebarang soalan...',
+      status: 'Kaunselor kerjaya • dalam talian',
+      matchesText: 'Berikut ialah kerjaya terbaik yang sepadan dengan kemahiran yang anda tunjukkan dalam Mod Latihan!',
+      routeText: (name: string) =>
+        `Terdapat pelbagai laluan untuk menjadi seorang ${name}. Pilih universiti di bawah untuk melihat laluan lazim selepas SPM.`,
+      salaryText: (name: string) =>
+        `Berikut ialah anggaran pendapatan seorang ${name} pada pekerjaan pertama mereka dan perkembangannya.`,
+      greetText: `Hai ${nickname}! Apa yang anda ingin terokai hari ini? Anda boleh tanya tentang padanan kerjaya, kursus selepas SPM, atau gaji permulaan.`,
+      helpText:
+        'Saya boleh bantu petakan laluan selepas SPM, tunjukkan gaji permulaan, atau padankan kerjaya. Cuba tanya tentang Jurutera Perisian, Peguam Muda, Doktor Masa Depan, Pereka Produk, atau Cef Utama!',
+      disclaimer: 'Dreamy boleh melakukan kesilapan. Sahkan maklumat dengan guru atau kaunselor anda.',
+      newChat: 'Perbualan Baharu',
+      close: 'Tutup Dreamy',
+    },
+  }[locale];
+
+  // Ambient speech bubble
   const say = useCallback((text: string, ms = 3200) => {
     if (bubbleTimerRef.current) clearTimeout(bubbleTimerRef.current);
     setBubbleText(text);
@@ -92,7 +151,7 @@ export function AskDreamyOverlay() {
     setShowAmbientBubble(false);
   }, []);
 
-  // Periodic ambient teaser bubbles when idle and chat is closed
+  // Periodic ambient teaser bubbles
   useEffect(() => {
     if (isOpen) {
       if (bubbleTimerRef.current) clearTimeout(bubbleTimerRef.current);
@@ -100,10 +159,11 @@ export function AskDreamyOverlay() {
     }
 
     const scheduleNextTeaser = (initial = false) => {
-      const delay = initial ? 3000 : 10000 + Math.random() * 5000;
+      const delay = initial ? 3000 : 12000 + Math.random() * 6000;
       ambientIntervalRef.current = setTimeout(() => {
         if (!isOpen && !dragRef.current?.hasDragged) {
-          const nextTip = AMBIENT_TIPS[tipIndexRef.current % AMBIENT_TIPS.length];
+          const tips = t.ambientTips;
+          const nextTip = tips[tipIndexRef.current % tips.length];
           tipIndexRef.current += 1;
           say(nextTip);
         }
@@ -117,9 +177,8 @@ export function AskDreamyOverlay() {
       if (ambientIntervalRef.current) clearTimeout(ambientIntervalRef.current);
       if (bubbleTimerRef.current) clearTimeout(bubbleTimerRef.current);
     };
-  }, [isOpen, say, hush]);
+  }, [isOpen, say, hush, t.ambientTips]);
 
-  // Clamps Dreamy within viewport bounds and applies 60fps translate3d directly
   const place = useCallback((x: number, y: number) => {
     if (typeof window === 'undefined') return;
     const w = wrapperRef.current?.offsetWidth || 140;
@@ -149,11 +208,10 @@ export function AskDreamyOverlay() {
         })
       );
     } catch {
-      // Ignore private browsing storage errors
+      // Ignore storage errors
     }
   }, []);
 
-  // Initialize position and restore saved coordinates
   useEffect(() => {
     const isPhone = window.innerWidth < 768;
     let initialX = window.innerWidth - 160 - (isPhone ? 16 : 32);
@@ -166,7 +224,7 @@ export function AskDreamyOverlay() {
         initialY = window.innerHeight - saved.by;
       }
     } catch {
-      // fallback to bottom-right
+      // fallback
     }
 
     place(initialX, initialY);
@@ -182,7 +240,6 @@ export function AskDreamyOverlay() {
     };
   }, [place]);
 
-  // Spring tilt inertia loop inside requestAnimationFrame
   useEffect(() => {
     let animId: number;
     const tick = () => {
@@ -195,13 +252,12 @@ export function AskDreamyOverlay() {
     return () => cancelAnimationFrame(animId);
   }, []);
 
-  // Pointer event handlers with pointer capture and drag threshold
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     if (e.button !== 0) return;
     try {
       e.currentTarget.setPointerCapture(e.pointerId);
     } catch {
-      // synthetic pointer fallback
+      // fallback
     }
     dragRef.current = {
       id: e.pointerId,
@@ -220,7 +276,6 @@ export function AskDreamyOverlay() {
     const dx = e.clientX - drag.startX;
     const dy = e.clientY - drag.startY;
 
-    // Clean drag threshold: ignore micro movements <= 6px
     if (!drag.hasDragged && Math.hypot(dx, dy) <= 6) return;
 
     if (!drag.hasDragged) {
@@ -254,7 +309,6 @@ export function AskDreamyOverlay() {
       setTimeout(() => setIsHopping(false), 520);
       setMascotMood('idle');
     } else {
-      // Tap / Click action! Pop animation and open chatbox
       hush();
       setIsPopping(true);
       setTimeout(() => setIsPopping(false), 300);
@@ -266,11 +320,9 @@ export function AskDreamyOverlay() {
 
   const handleCloseChat = () => {
     setIsOpen(false);
-    // Trigger signature 360° spin entrance animation when chat closes
     setEntranceCount((prev) => prev + 1);
   };
 
-  // Auto-scroll chat
   useEffect(() => {
     if (isOpen) {
       setTimeout(() => {
@@ -279,56 +331,6 @@ export function AskDreamyOverlay() {
       setTimeout(() => inputRef.current?.focus(), 150);
     }
   }, [isOpen, messages, isThinking]);
-
-  // Intent detector matching DreamPath-Ask-Dreamy.html
-  const detectIntent = (text: string) => {
-    const t = text.toLowerCase();
-    if (
-      /^\s*(hi+|hello+|hey+|hai|helo|hiya|yo|salam|assalamualaikum|good (morning|afternoon|evening))( dreamy| there)?[\s!.,?]*$/.test(
-        t
-      )
-    ) {
-      return { type: 'greet' };
-    }
-
-    const career = /data/.test(t)
-      ? 'da'
-      : /\bux\b|design/.test(t)
-      ? 'ux'
-      : /software|programm|coding|developer/.test(t)
-      ? 'se'
-      : currentCareer;
-
-    const uni = /uitm/.test(t)
-      ? 'uitm'
-      : /sunway/.test(t)
-      ? 'sunway'
-      : /\bmmu\b|multimedia univ/.test(t)
-      ? 'mmu'
-      : /\bum\b|malaya/.test(t)
-      ? 'um'
-      : 'um';
-
-    if (/salary|pay\b|paid|earn|gaji|income|money|\brm\b/.test(t)) {
-      return { type: 'salary', career };
-    }
-    if (
-      /route|course|spm|universit|study|degree|asasi|matri|stpm|diploma|foundation|requirement|become|get into/.test(
-        t
-      )
-    ) {
-      return { type: 'route', career, uni };
-    }
-    if (
-      /match|suggest|fit|suit|top 3|top three|which career|what career|job for me|my skills/.test(
-        t
-      )
-    ) {
-      return { type: 'matches' };
-    }
-
-    return { type: 'help', career };
-  };
 
   const handleSendMessage = (textToSend?: string) => {
     const query = (textToSend || inputText).trim();
@@ -345,18 +347,24 @@ export function AskDreamyOverlay() {
       },
     ]);
 
-    const intent = detectIntent(query);
-    if (intent.career) {
-      setCurrentCareer(intent.career);
+    const intent = detectIntent(query, currentCareer);
+    if (intent.careerId) {
+      setCurrentCareer(intent.careerId);
     }
 
     setIsThinking(true);
     setMascotMood('thinking');
-    if (intent.type === 'matches') setThinkingLabel('checking your Practice skills...');
-    else if (intent.type === 'route') setThinkingLabel('looking up routes from SPM...');
-    else if (intent.type === 'salary') setThinkingLabel('comparing pay in RM...');
-    else if (intent.type === 'greet') setThinkingLabel('saying hello...');
-    else setThinkingLabel('reading your question...');
+    if (intent.type === 'matches') {
+      setThinkingLabel(locale === 'ms' ? 'menyemak kemahiran anda...' : 'checking your Practice skills...');
+    } else if (intent.type === 'route') {
+      setThinkingLabel(locale === 'ms' ? 'mencari laluan dari SPM...' : 'looking up routes from SPM...');
+    } else if (intent.type === 'salary') {
+      setThinkingLabel(locale === 'ms' ? 'membandingkan gaji dalam RM...' : 'comparing pay in RM...');
+    } else if (intent.type === 'greet') {
+      setThinkingLabel(locale === 'ms' ? 'menyapa anda...' : 'saying hello...');
+    } else {
+      setThinkingLabel(locale === 'ms' ? 'membaca soalan anda...' : 'reading your question...');
+    }
 
     setTimeout(() => {
       setIsThinking(false);
@@ -364,39 +372,40 @@ export function AskDreamyOverlay() {
       setTimeout(() => setMascotMood('idle'), 2000);
 
       const botMsgId = `dreamy-${Date.now()}`;
+      const career = getCareerById(intent.careerId || currentCareer) ?? CAREERS[0];
+      const careerTitle = career.i18n[locale].title;
+
       if (intent.type === 'matches') {
         setMessages((prev) => [
           ...prev,
           {
             id: botMsgId,
             sender: 'dreamy',
-            text: 'Here are the top careers that best match the skills you demonstrated in Practice Modes!',
+            text: t.matchesText,
             cardType: 'matches',
           },
         ]);
       } else if (intent.type === 'route') {
-        const c = CAREERS[intent.career || currentCareer];
         setMessages((prev) => [
           ...prev,
           {
             id: botMsgId,
             sender: 'dreamy',
-            text: `There's more than one way to become a ${c.name}. Pick a university below to see the usual route after SPM.`,
+            text: t.routeText(careerTitle),
             cardType: 'route',
-            careerKey: intent.career || currentCareer,
-            uniKey: intent.uni || 'um',
+            careerKey: intent.careerId || currentCareer,
+            uniKey: intent.uniKey || 'um',
           },
         ]);
       } else if (intent.type === 'salary') {
-        const c = CAREERS[intent.career || currentCareer];
         setMessages((prev) => [
           ...prev,
           {
             id: botMsgId,
             sender: 'dreamy',
-            text: `Here's what a ${c.name} usually earns in their first job, and how pay grows with experience.`,
+            text: t.salaryText(careerTitle),
             cardType: 'salary',
-            careerKey: intent.career || currentCareer,
+            careerKey: intent.careerId || currentCareer,
           },
         ]);
       } else if (intent.type === 'greet') {
@@ -405,7 +414,7 @@ export function AskDreamyOverlay() {
           {
             id: botMsgId,
             sender: 'dreamy',
-            text: 'Hello there! What would you like to explore today? You can ask about career matches, courses after SPM, or starting salaries.',
+            text: t.greetText,
           },
         ]);
       } else {
@@ -414,32 +423,52 @@ export function AskDreamyOverlay() {
           {
             id: botMsgId,
             sender: 'dreamy',
-            text: "I can help map your path after SPM, show starting salaries, or match careers to your skills. Try tapping one of the quick suggestions below or ask about Software Engineering, Data Analysis, or UX Design!",
+            text: t.helpText,
           },
         ]);
       }
-    }, 750);
+    }, 600);
   };
 
   const handleResetChat = () => {
-    setMessages(INITIAL_MESSAGES);
+    setMessages([
+      {
+        id: 'msg-0',
+        sender: 'dreamy',
+        text: t.initialGreeting,
+      },
+    ]);
     setMascotMood('happy');
     setTimeout(() => setMascotMood('idle'), 1800);
   };
 
   const handleSelectRouteFromMatches = (careerId: string) => {
     setCurrentCareer(careerId);
-    handleSendMessage(`How do I become a ${CAREERS[careerId].name} after SPM?`);
+    const career = getCareerById(careerId) ?? CAREERS[0];
+    const name = career.i18n[locale].title;
+    const prompt =
+      locale === 'ms'
+        ? `Bagaimanakah laluan menjadi seorang ${name} selepas SPM?`
+        : `How do I become a ${name} after SPM?`;
+    handleSendMessage(prompt);
   };
 
   const handleCompareCareer = (careerId: string) => {
     setCurrentCareer(careerId);
-    handleSendMessage(`What's the starting salary for a ${CAREERS[careerId].name}?`);
+    const career = getCareerById(careerId) ?? CAREERS[0];
+    const name = career.i18n[locale].title;
+    const prompt =
+      locale === 'ms'
+        ? `Berapakah anggaran gaji permulaan seorang ${name}?`
+        : `What's the starting salary for a ${name}?`;
+    handleSendMessage(prompt);
   };
+
+  const currentCareerObj = getCareerById(currentCareer) ?? CAREERS[0];
 
   return (
     <>
-      {/* 1. FLOATING 3D DREAMY MASCOT (60fps Native Three.js Engine) */}
+      {/* 1. FLOATING 3D DREAMY MASCOT */}
       {!isOpen && (
         <div
           ref={wrapperRef}
@@ -453,23 +482,20 @@ export function AskDreamyOverlay() {
           }}
           title="Drag Dreamy or click to chat!"
         >
-          {/* Ambient Pop-Up Teaser Speech Bubble (Stitch Light Theme) */}
           {showAmbientBubble && !isDragging && (
-            <div className="absolute right-[85%] -top-3 max-w-[220px] bg-white text-slate-800 border border-slate-200 shadow-lg rounded-2xl px-4 py-2 text-xs font-semibold select-none pointer-events-none animate-fade-in z-30 whitespace-nowrap flex items-center gap-1.5">
+            <div className="absolute right-[85%] -top-3 max-w-[240px] bg-surface-container-lowest text-on-surface border border-hairline shadow-card rounded-2xl px-4 py-2 text-xs font-semibold select-none pointer-events-none animate-fade-in z-30 whitespace-nowrap flex items-center gap-1.5">
               <span>{bubbleText}</span>
-              <div className="absolute -right-1.5 top-1/2 -translate-y-1/2 w-3 h-3 bg-white border-t border-r border-slate-200 rotate-45"></div>
+              <div className="absolute -right-1.5 top-1/2 -translate-y-1/2 w-3 h-3 bg-surface-container-lowest border-t border-r border-hairline rotate-45" />
             </div>
           )}
 
-          {/* Fallback Static Callout Pill when no ambient teaser is active */}
           {!showAmbientBubble && !isDragging && (
-            <div className="mb-1 px-3.5 py-1.5 bg-white/95 text-[#1E3A8A] text-xs font-bold rounded-full shadow-lg border border-[#E8E5DC] flex items-center gap-1.5 pointer-events-none transition-opacity duration-200">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <div className="mb-1 px-3.5 py-1.5 bg-surface-container-lowest/95 text-on-surface text-xs font-bold rounded-full shadow-soft border border-hairline flex items-center gap-1.5 pointer-events-none">
+              <span className="w-2 h-2 rounded-full bg-secondary animate-pulse" />
               <span>Ask Dreamy</span>
             </div>
           )}
 
-          {/* Three.js Mascot Controller */}
           <div
             className={`transition-transform duration-75 ${
               isHopping ? 'animate-dreamy-hop' : ''
@@ -488,43 +514,45 @@ export function AskDreamyOverlay() {
         </div>
       )}
 
-      {/* 2. STITCH-STYLED "ASK DREAMY" POP-UP CHATBOX */}
+      {/* 2. ASK DREAMY POP-UP CHATBOX */}
       {isOpen && (
-        <div className="fixed bottom-20 md:bottom-6 right-3 sm:right-6 md:right-8 z-[70] w-[94vw] sm:w-[480px] md:w-[540px] h-[640px] max-h-[85vh] bg-[#F8F7F4] border border-[#E8E5DC] rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-fade-in select-none">
+        <div className="fixed bottom-20 md:bottom-6 right-3 sm:right-6 md:right-8 z-[70] w-[94vw] sm:w-[480px] md:w-[540px] h-[640px] max-h-[85vh] bg-surface-container-low border border-hairline rounded-3xl shadow-float flex flex-col overflow-hidden animate-fade-in select-none">
           {/* Header Bar */}
-          <header className="flex items-center justify-between px-4 py-3 bg-white/90 backdrop-blur-md border-b border-[#E8E5DC]/80 shrink-0">
+          <header className="flex items-center justify-between px-4 py-3 bg-surface-container-lowest/90 backdrop-blur-md border-b border-hairline shrink-0">
             <div className="flex items-center gap-2.5">
-              <div className="relative w-9 h-9 rounded-full bg-[#CFE2FA] flex items-center justify-center p-0.5 shadow-xs">
+              <div className="relative w-9 h-9 rounded-full bg-primary-container flex items-center justify-center p-0.5 shadow-soft">
                 <img
                   src="https://lh3.googleusercontent.com/aida-public/AB6AXuCApHTOEso7S_JubzZh0y8FbAV0RbvATwViv1SXSJ8CwfAv0XYEs54GWpXHRDjH84_U0chGcrNGyCM2qdPUpH1-6gWIdNeb1tJeI_1jzMqLJkWRmyLWav4QszZqNHcptOt_p_geJZsS0AsvbQjU9epb9Y2ncnCIUSB2EF3UYKT40h18Zwc5tdY479xjk_AX9Kcgu62-gsc2bMKnNTZkSZxT98T3quOTuq7jY2JAzpLb1GchvYqKgtSx"
                   alt="Dreamy"
                   className="w-7 h-7 object-contain"
                 />
-                <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-white rounded-full"></span>
+                <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-secondary border-2 border-surface-container-lowest rounded-full" />
               </div>
               <div>
-                <h3 className="text-sm font-bold text-[#1E3A8A] leading-tight">Dreamy</h3>
-                <p className="text-[11px] text-[#64748B]">Career counsellor • online</p>
+                <h3 className="text-sm font-bold text-on-surface leading-tight">Dreamy</h3>
+                <p className="text-[11px] text-on-surface-variant">{t.status}</p>
               </div>
             </div>
 
             <div className="flex items-center gap-1.5">
-              {/* Reset/New Chat */}
+              {/* New Chat */}
               <button
                 type="button"
                 onClick={handleResetChat}
-                className="w-8 h-8 rounded-full bg-white border border-[#E8E5DC] flex items-center justify-center text-[#1E3A8A] hover:bg-[#F8FAFC] transition shadow-xs cursor-pointer"
-                title="New Chat"
+                className="w-8 h-8 rounded-full bg-surface-container-lowest border border-hairline flex items-center justify-center text-on-surface hover:bg-surface-container transition shadow-soft cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+                title={t.newChat}
+                aria-label={t.newChat}
               >
                 <span className="material-symbols-outlined text-[18px]">add</span>
               </button>
 
-              {/* Close Button: Collapse back to floating mascot */}
+              {/* Close Button */}
               <button
                 type="button"
                 onClick={handleCloseChat}
-                className="w-8 h-8 rounded-full bg-white border border-[#E8E5DC] flex items-center justify-center text-[#1E3A8A] hover:bg-[#F8FAFC] transition shadow-xs cursor-pointer"
-                title="Close Dreamy"
+                className="w-8 h-8 rounded-full bg-surface-container-lowest border border-hairline flex items-center justify-center text-on-surface hover:bg-surface-container transition shadow-soft cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+                title={t.close}
+                aria-label={t.close}
               >
                 <span className="material-symbols-outlined text-[18px]">close</span>
               </button>
@@ -537,7 +565,7 @@ export function AskDreamyOverlay() {
               if (msg.sender === 'user') {
                 return (
                   <div key={msg.id} className="flex justify-end animate-fade-in">
-                    <div className="max-w-[85%] bg-[#CFE2FA] text-[#1E3A8A] font-medium px-4 py-2.5 rounded-2xl rounded-tr-xs text-sm shadow-xs">
+                    <div className="max-w-[85%] bg-primary-container text-on-primary-fixed font-medium px-4 py-2.5 rounded-2xl rounded-tr-xs text-sm shadow-soft">
                       {msg.text}
                     </div>
                   </div>
@@ -548,23 +576,23 @@ export function AskDreamyOverlay() {
               return (
                 <div key={msg.id} className="space-y-2 animate-fade-in">
                   <div className="flex items-center gap-1.5">
-                    <div className="w-5 h-5 rounded-full bg-[#CFE2FA] flex items-center justify-center p-0.5 shadow-xs">
+                    <div className="w-5 h-5 rounded-full bg-primary-container flex items-center justify-center p-0.5 shadow-soft">
                       <img
                         src="https://lh3.googleusercontent.com/aida-public/AB6AXuCApHTOEso7S_JubzZh0y8FbAV0RbvATwViv1SXSJ8CwfAv0XYEs54GWpXHRDjH84_U0chGcrNGyCM2qdPUpH1-6gWIdNeb1tJeI_1jzMqLJkWRmyLWav4QszZqNHcptOt_p_geJZsS0AsvbQjU9epb9Y2ncnCIUSB2EF3UYKT40h18Zwc5tdY479xjk_AX9Kcgu62-gsc2bMKnNTZkSZxT98T3quOTuq7jY2JAzpLb1GchvYqKgtSx"
                         alt="Dreamy"
                         className="w-4 h-4 object-contain"
                       />
                     </div>
-                    <span className="text-xs font-bold text-[#1E3A8A]">Dreamy</span>
+                    <span className="text-xs font-bold text-on-surface">Dreamy</span>
                   </div>
 
-                  {msg.text && (
-                    <div className="text-[#334155] text-sm leading-relaxed pl-6">
-                      {msg.text}
+                  {(msg.text || (msg.id === 'msg-0' ? t.initialGreeting : '')) && (
+                    <div className="text-on-surface text-sm leading-relaxed pl-6">
+                      {msg.text || t.initialGreeting}
                     </div>
                   )}
 
-                  {/* Structured Cards */}
+                  {/* Cards */}
                   {msg.cardType === 'matches' && (
                     <div className="pt-1">
                       <CareerMatchesCard onSelectRoute={handleSelectRouteFromMatches} />
@@ -594,7 +622,7 @@ export function AskDreamyOverlay() {
 
             {/* Thinking Indicator */}
             {isThinking && (
-              <div className="space-y-1.5 animate-pulse pl-6 flex items-center gap-2 text-xs text-[#1E3A8A] font-semibold">
+              <div className="space-y-1.5 animate-pulse pl-6 flex items-center gap-2 text-xs text-primary font-semibold">
                 <span className="material-symbols-outlined text-[16px] animate-spin">
                   progress_activity
                 </span>
@@ -606,37 +634,47 @@ export function AskDreamyOverlay() {
           </div>
 
           {/* Quick Chips & Input Footer */}
-          <div className="p-3 bg-white/80 backdrop-blur-md border-t border-[#E8E5DC]/80 shrink-0">
+          <div className="p-3 bg-surface-container-lowest/80 backdrop-blur-md border-t border-hairline shrink-0">
             {/* Quick-reply Suggestion Chips */}
             <div className="flex items-center gap-1.5 overflow-x-auto pb-2 scrollbar-none">
               <button
                 type="button"
-                onClick={() => handleSendMessage('Which careers match my skills?')}
-                className="whitespace-nowrap px-3 py-1.5 bg-white border border-[#E8E5DC] text-[#1E3A8A] text-xs font-semibold rounded-full hover:bg-[#CFE2FA]/30 hover:border-[#CFE2FA] transition shadow-xs cursor-pointer shrink-0"
+                onClick={() =>
+                  handleSendMessage(
+                    locale === 'ms'
+                      ? 'Kerjaya manakah yang sepadan dengan kemahiran saya?'
+                      : 'Which careers match my skills?'
+                  )
+                }
+                className="whitespace-nowrap px-3 py-1.5 bg-surface-container-lowest border border-hairline text-on-surface text-xs font-semibold rounded-full hover:bg-primary-container hover:text-on-primary-fixed transition shadow-soft cursor-pointer shrink-0 min-h-[36px]"
               >
-                Career matches
+                {t.chipMatches}
               </button>
               <button
                 type="button"
                 onClick={() =>
                   handleSendMessage(
-                    `How do I become a ${CAREERS[currentCareer].name} after SPM?`
+                    locale === 'ms'
+                      ? `Bagaimanakah laluan menjadi ${currentCareerObj.i18n.ms.title} selepas SPM?`
+                      : `How do I become a ${currentCareerObj.i18n.en.title} after SPM?`
                   )
                 }
-                className="whitespace-nowrap px-3 py-1.5 bg-white border border-[#E8E5DC] text-[#1E3A8A] text-xs font-semibold rounded-full hover:bg-[#CFE2FA]/30 hover:border-[#CFE2FA] transition shadow-xs cursor-pointer shrink-0"
+                className="whitespace-nowrap px-3 py-1.5 bg-surface-container-lowest border border-hairline text-on-surface text-xs font-semibold rounded-full hover:bg-primary-container hover:text-on-primary-fixed transition shadow-soft cursor-pointer shrink-0 min-h-[36px]"
               >
-                Course route
+                {t.chipRoute}
               </button>
               <button
                 type="button"
                 onClick={() =>
                   handleSendMessage(
-                    `What's the starting salary for a ${CAREERS[currentCareer].name}?`
+                    locale === 'ms'
+                      ? `Berapakah anggaran gaji permulaan untuk ${currentCareerObj.i18n.ms.title}?`
+                      : `What is the starting salary for a ${currentCareerObj.i18n.en.title}?`
                   )
                 }
-                className="whitespace-nowrap px-3 py-1.5 bg-white border border-[#E8E5DC] text-[#1E3A8A] text-xs font-semibold rounded-full hover:bg-[#CFE2FA]/30 hover:border-[#CFE2FA] transition shadow-xs cursor-pointer shrink-0"
+                className="whitespace-nowrap px-3 py-1.5 bg-surface-container-lowest border border-hairline text-on-surface text-xs font-semibold rounded-full hover:bg-primary-container hover:text-on-primary-fixed transition shadow-soft cursor-pointer shrink-0 min-h-[36px]"
               >
-                Starting salary
+                {t.chipSalary}
               </button>
             </div>
 
@@ -646,28 +684,29 @@ export function AskDreamyOverlay() {
                 e.preventDefault();
                 handleSendMessage();
               }}
-              className="relative flex items-center bg-white border border-[#E8E5DC] rounded-2xl p-1 shadow-xs focus-within:border-[#1E3A8A] transition"
+              className="relative flex items-center bg-surface-container-lowest border border-hairline rounded-2xl p-1 shadow-soft focus-within:border-primary transition"
             >
               <input
                 ref={inputRef}
                 type="text"
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
-                placeholder="Ask Dreamy a question..."
-                className="w-full px-3 py-1.5 text-sm text-[#334155] placeholder-[#64748B] bg-transparent outline-none"
+                placeholder={t.placeholder}
+                className="w-full px-3 py-1.5 text-sm text-on-surface placeholder:text-outline bg-transparent outline-none"
               />
               <button
                 type="submit"
                 disabled={!inputText.trim() || isThinking}
-                className="w-8 h-8 rounded-xl bg-[#1E3A8A] text-white flex items-center justify-center hover:bg-[#1E3A8A]/90 transition shrink-0 disabled:opacity-40 cursor-pointer"
+                className="w-9 h-9 rounded-xl bg-primary text-on-primary flex items-center justify-center hover:opacity-90 transition shrink-0 disabled:opacity-40 cursor-pointer min-w-[36px] min-h-[36px]"
                 title="Send message"
+                aria-label="Send message"
               >
                 <span className="material-symbols-outlined text-[16px]">arrow_upward</span>
               </button>
             </form>
 
-            <p className="text-center text-[10px] text-[#64748B] mt-1.5">
-              Dreamy can make mistakes. Double-check with your teacher or counsellor.
+            <p className="text-center text-[10px] text-on-surface-variant mt-1.5">
+              {t.disclaimer}
             </p>
           </div>
         </div>

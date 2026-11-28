@@ -1,10 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { CAREERS } from "@/content/careers";
+import { DREAMY_KB } from "@/content/dreamy-kb";
 import { ONBOARDING_QUIZ } from "@/content/onboarding-quiz";
 import { en } from "@/content/i18n/en";
 import { ms } from "@/content/i18n/ms";
 import {
   CareerSchema,
+  DreamyKBSchema,
   OnboardingQuizSchema,
   QuizSchema,
   ScenarioSchema,
@@ -151,6 +153,38 @@ describe("content schemas & bilingual parity", () => {
 
     for (const career of CAREERS) {
       expect(ONBOARDING_QUIZ.careerWeights[career.id]).toBeDefined();
+    }
+  });
+
+  it("validates DREAMY_KB covers all 5 careers with Estimated (MY) salary & bilingual routes", () => {
+    const parsed = DreamyKBSchema.safeParse(DREAMY_KB);
+    expect(parsed.success, `Dreamy KB failed schema validation: ${JSON.stringify(parsed.error)}`).toBe(true);
+
+    const requiredIds = [
+      "software-engineer",
+      "junior-lawyer",
+      "future-doctor",
+      "product-designer",
+      "master-chef",
+    ];
+
+    for (const id of requiredIds) {
+      const entry = DREAMY_KB[id];
+      expect(entry, `Missing dreamy-kb entry for ${id}`).toBeDefined();
+      expect(entry.estimatedBadge).toBe("Estimated (MY)");
+      expect(entry.salarySource).toBeTruthy();
+      expect(entry.i18n.en.title).toBeTruthy();
+      expect(entry.i18n.ms.title).toBeTruthy();
+      expect(entry.routes.length).toBeGreaterThanOrEqual(1);
+
+      for (const route of entry.routes) {
+        expect(route.i18n.en.spmRequirements.length).toBeGreaterThanOrEqual(1);
+        expect(route.i18n.ms.spmRequirements.length).toBeGreaterThanOrEqual(1);
+        expect(route.i18n.en.preU.name).toBeTruthy();
+        expect(route.i18n.ms.preU.name).toBeTruthy();
+        expect(route.i18n.en.degree.name).toBeTruthy();
+        expect(route.i18n.ms.degree.name).toBeTruthy();
+      }
     }
   });
 });
